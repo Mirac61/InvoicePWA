@@ -1,0 +1,17 @@
+# Java
+backend/target/
+backend/.idea/
+backend/*.iml
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.idea/
+frontend/*.iml
+
+# OS
+.DS_Store
+
+# Env
+.env
