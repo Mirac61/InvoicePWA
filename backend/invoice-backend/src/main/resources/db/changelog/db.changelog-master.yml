@@ -1,0 +1,71 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: mirac
+      changes:
+        - createTable:
+            tableName: customers
+            columns:
+              - column: { name: id, type: TEXT, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: type, type: TEXT, constraints: { nullable: false } }
+              - column: { name: name, type: TEXT, constraints: { nullable: false } }
+              - column: { name: street, type: TEXT }
+              - column: { name: zip, type: TEXT }
+              - column: { name: city, type: TEXT }
+              - column: { name: country, type: TEXT }
+              - column: { name: email, type: TEXT }
+              - column: { name: phone, type: TEXT }
+              - column: { name: vat_id, type: TEXT }
+              - column: { name: created_at, type: TEXT, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TEXT, constraints: { nullable: false } }
+
+        - createTable:
+            tableName: invoice_sequences
+            columns:
+              - column: { name: year, type: INTEGER, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: last_number, type: INTEGER, constraints: { nullable: false } }
+
+        - createTable:
+            tableName: invoices
+            columns:
+              - column: { name: id, type: TEXT, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: status, type: TEXT, constraints: { nullable: false } }
+              - column: { name: invoice_number, type: TEXT }
+              - column: { name: invoice_date, type: TEXT, constraints: { nullable: false } }
+              - column: { name: service_date, type: TEXT }
+              - column: { name: customer_id, type: TEXT, constraints: { nullable: false } }
+              - column: { name: currency, type: TEXT, constraints: { nullable: false } }
+              - column: { name: notes, type: TEXT }
+              - column: { name: net_total, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: tax_total, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: gross_total, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: created_at, type: TEXT, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TEXT, constraints: { nullable: false } }
+
+        - createIndex:
+            tableName: invoices
+            indexName: ux_invoices_invoice_number
+            unique: true
+            columns:
+              - column: { name: invoice_number }
+
+        - createTable:
+            tableName: invoice_items
+            columns:
+              - column: { name: id, type: TEXT, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: invoice_id, type: TEXT, constraints: { nullable: false } }
+              - column: { name: position, type: INTEGER, constraints: { nullable: false } }
+              - column: { name: title, type: TEXT, constraints: { nullable: false } }
+              - column: { name: quantity, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: unit, type: TEXT }
+              - column: { name: unit_price_net, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: tax_rate, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: net_total, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: tax_total, type: NUMERIC, constraints: { nullable: false } }
+              - column: { name: gross_total, type: NUMERIC, constraints: { nullable: false } }
+
+        - createIndex:
+            tableName: invoice_items
+            indexName: ix_invoice_items_invoice
+            columns:
+              - column: { name: invoice_id }
