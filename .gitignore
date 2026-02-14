@@ -32,3 +32,6 @@ yarn-error.log*
 
 # Env
 .env
+
+# Local planning files
+CUSTOMER_TODO.local.md

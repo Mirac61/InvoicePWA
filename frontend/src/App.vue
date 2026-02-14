@@ -1,43 +1,53 @@
-<script setup>
-import { onMounted, ref } from 'vue'
+<!-- src/App.vue -->
+<script setup lang="ts">
+import { ref } from "vue";
+import Navbar from "./components/Navbar.vue";
+import HealthCard from "./components/HealthCard.vue";
+import CustomerCreateCard from "./components/CustomerCreateCard.vue";
+import CustomerListCard from "./components/CustomerListCard.vue";
 
-const health = ref(null)
-const loading = ref(true)
-const error = ref('')
+type NavKey = "home" | "invoices" | "customers" | "settings";
+const active = ref<NavKey>("home");
 
-async function loadHealth() {
-  loading.value = true
-  error.value = ''
-
-  try {
-    const response = await fetch('/api/health')
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-    health.value = await response.json()
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Unbekannter Fehler'
-  } finally {
-    loading.value = false
-  }
+function onNavigate(key: NavKey) {
+  active.value = key;
 }
-
-onMounted(loadHealth)
 </script>
 
 <template>
+  <Navbar :active="active" @navigate="onNavigate" />
+
   <main class="container">
     <h1>Invoice App</h1>
-    <p>Vue.js Frontend ist aktiv.</p>
 
-    <section class="card">
-      <h2>Backend-Status</h2>
+    <HealthCard />
 
-      <p v-if="loading">Lade...</p>
-      <p v-else-if="error">Fehler: {{ error }}</p>
-      <pre v-else>{{ health }}</pre>
+    <section v-if="active === 'customers'" class="stack">
+      <CustomerCreateCard />
+      <CustomerListCard />
+    </section>
 
-      <button @click="loadHealth">Neu laden</button>
+    <section v-else class="card">
+      <h2>Start</h2>
+      <p>Wähle oben einen Bereich.</p>
     </section>
   </main>
 </template>
+
+<style scoped>
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px 16px;
+}
+.stack {
+  display: grid;
+  gap: 14px;
+}
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  background: #fff;
+}
+</style>
