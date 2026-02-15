@@ -2,9 +2,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import Navbar from "./components/Navbar.vue";
-import HealthCard from "./components/HealthCard.vue";
-import CustomerCreateCard from "./components/CustomerCreateCard.vue";
-import CustomerListCard from "./components/CustomerListCard.vue";
+import SystemStatus from "./components/SystemStatus.vue";
+import Kundenerstellung from "./components/Kundenerstellung.vue";
+import KundenÜbersicht from "./components/KundenÜbersicht.vue";
 
 type NavKey = "home" | "invoices" | "customers" | "settings";
 const active = ref<NavKey>("home");
@@ -20,11 +20,11 @@ function onNavigate(key: NavKey) {
   <main class="container">
     <h1>Invoice App</h1>
 
-    <HealthCard />
+    <SystemStatus />
 
     <section v-if="active === 'customers'" class="stack">
-      <CustomerCreateCard />
-      <CustomerListCard />
+      <Kundenerstellung />
+      <KundenÜbersicht />
     </section>
 
     <section v-else class="card">
