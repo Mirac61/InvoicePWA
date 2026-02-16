@@ -160,4 +160,4 @@ npm run preview
 
 ## Lizenz
 
-Private Nutzung für dieses Projekt. Passe das an, wenn du es öffentlich freigibst.
+Private Nutzung für dieses Projekt. 
