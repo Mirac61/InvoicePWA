@@ -61,7 +61,8 @@ public class CustomerController {
     private Customer toCustomer(CreateCustomerRequest request) {
         Customer customer = new Customer();
         customer.setType(request.type());
-        customer.setName(request.name());
+        customer.setForename(request.forename());
+        customer.setSurname(request.surname());
         customer.setStreet(request.street());
         customer.setZip(request.zip());
         customer.setCity(request.city());
@@ -75,7 +76,8 @@ public class CustomerController {
     private Customer toCustomer(UpdateCustomerRequest request) {
         Customer customer = new Customer();
         customer.setType(request.type());
-        customer.setName(request.name());
+        customer.setForename(request.forename());
+        customer.setSurname(request.surname());
         customer.setStreet(request.street());
         customer.setZip(request.zip());
         customer.setCity(request.city());
@@ -90,7 +92,8 @@ public class CustomerController {
         return new CustomerResponse(
             customer.getId(),
             customer.getType(),
-            customer.getName(),
+            customer.getForename(),
+            customer.getSurname(),
             customer.getStreet(),
             customer.getZip(),
             customer.getCity(),

@@ -28,8 +28,12 @@ public class Customer {
     private CustomerType type;
 
     @NotBlank
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "forename", nullable = false)
+    private String forename;
+
+    @NotBlank
+    @Column(name = "surname", nullable = false)
+    private String surname;
 
     @NotBlank
     @Column(name = "street")
@@ -68,10 +72,21 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(CustomerType type, String name, String street, String zip, String city, String country, String email,
-                    String phone, String vatId) {
+    public Customer(
+            CustomerType type,
+            String forename,
+            String surname,
+            String street,
+            String zip,
+            String city,
+            String country,
+            String email,
+            String phone,
+            String vatId
+    ) {
         this.type = type;
-        this.name = name;
+        this.forename = forename;
+        this.surname = surname;
         this.street = street;
         this.zip = zip;
         this.city = city;
@@ -114,12 +129,20 @@ public class Customer {
         this.type = type;
     }
 
-    public String getName() {
-        return name;
+    public String getForename() {
+        return forename;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setForename(String forename) {
+        this.forename = forename;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getStreet() {
@@ -192,5 +215,51 @@ public class Customer {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    // Compatibility: old code still uses 'name' field
+    @Deprecated
+    public String getName() {
+        String fn = this.forename == null ? "" : this.forename.trim();
+        String sn = this.surname == null ? "" : this.surname.trim();
+        String full = (fn + " " + sn).trim();
+        return full.isBlank() ? null : full;
+    }
+
+    @Deprecated
+    public void setName(String name) {
+        if (name == null) {
+            this.forename = null;
+            this.surname = null;
+            return;
+        }
+
+        String trimmed = name.trim();
+        if (trimmed.isBlank()) {
+            this.forename = "";
+            this.surname = "";
+            return;
+        }
+
+        String[] parts = trimmed.split("\\s+");
+        if (parts.length == 1) {
+            this.forename = parts[0];
+            this.surname = "";
+            return;
+        }
+
+        this.forename = parts[0];
+        this.surname = String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length));
+    }
+
+    // Compatibility: 'surename' typo exists in old code
+    @Deprecated
+    public String getSurename() {
+        return getSurname();
+    }
+
+    @Deprecated
+    public void setSurename(String surename) {
+        setSurname(surename);
     }
 }

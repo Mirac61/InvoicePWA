@@ -34,7 +34,8 @@ public class CustomerService {
         validateDuplicateEmail(input.getEmail(), existing.getId());
 
         existing.setType(input.getType());
-        existing.setName(input.getName());
+        existing.setForename(input.getForename());
+        existing.setSurname(input.getSurname());
         existing.setStreet(input.getStreet());
         existing.setZip(input.getZip());
         existing.setCity(input.getCity());
@@ -51,6 +52,13 @@ public class CustomerService {
             throw new NoSuchElementException("Customer not found: " + id);
         }
         customerRepository.deleteById(id);
+    }
+
+    public List<Customer> searchByName(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        return customerRepository.findByForenameContainingIgnoreCaseOrSurnameContainingIgnoreCase(query, query);
     }
 
     private void validateDuplicateEmail(String email, String currentCustomerId) {

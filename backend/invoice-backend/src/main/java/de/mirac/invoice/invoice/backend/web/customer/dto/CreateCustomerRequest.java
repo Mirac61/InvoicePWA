@@ -7,7 +7,8 @@ import jakarta.validation.constraints.NotNull;
 
 public record CreateCustomerRequest(
     @NotNull CustomerType type,
-    @NotBlank String name,
+    @NotBlank String forename,
+    @NotBlank String surname,
     @NotBlank String street,
     @NotBlank String zip,
     @NotBlank String city,

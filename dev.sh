@@ -27,7 +27,7 @@ fi
 echo "[start] Backend auf http://localhost:8080"
 (
   cd "$BACKEND_DIR"
-  ./mvnw -Dmaven.repo.local=./.m2 spring-boot:run
+  ./mvnw -Dmaven.repo.local=./.m2 spring-boot:run > backend_startup.log 2>&1
 ) &
 BACKEND_PID=$!
 

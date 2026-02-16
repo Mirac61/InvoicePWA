@@ -5,7 +5,8 @@ import de.mirac.invoice.invoice.backend.domain.customer.CustomerType;
 public record CustomerResponse(
     String id,
     CustomerType type,
-    String name,
+    String forename,
+    String surname,
     String street,
     String zip,
     String city,

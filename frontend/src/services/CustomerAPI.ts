@@ -6,7 +6,9 @@ export enum CustomerType {
 export interface CustomerResponse {
   id: string;
   type: CustomerType;
-  name: string;
+
+  forename: string;
+  surname: string;
   street: string;
   zip: string;
   city: string;
@@ -18,10 +20,19 @@ export interface CustomerResponse {
   updatedAt: string;
 }
 
-export type CreateCustomerRequest = Omit<
-  CustomerResponse,
-  "id" | "createdAt" | "updatedAt"
->;
+export interface CreateCustomerRequest {
+  type: CustomerType;
+
+  forename: string;
+  surname: string;
+  street: string;
+  zip: string;
+  city: string;
+  country: string;
+  email: string;
+  phone: string;
+  vatId?: string;
+}
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {

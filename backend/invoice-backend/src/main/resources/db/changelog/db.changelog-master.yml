@@ -1,14 +1,31 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
+      id: "1"
       author: mirac
       changes:
         - createTable:
             tableName: customers
             columns:
-              - column: { name: id, type: TEXT, constraints: { primaryKey: true, nullable: false } }
-              - column: { name: type, type: TEXT, constraints: { nullable: false } }
-              - column: { name: name, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: id,
+                    type: TEXT,
+                    constraints: { primaryKey: true, nullable: false },
+                  }
+              - column:
+                  { name: type, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: forename,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: surname,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
               - column: { name: street, type: TEXT }
               - column: { name: zip, type: TEXT }
               - column: { name: city, type: TEXT }
@@ -16,31 +33,97 @@ databaseChangeLog:
               - column: { name: email, type: TEXT }
               - column: { name: phone, type: TEXT }
               - column: { name: vat_id, type: TEXT }
-              - column: { name: created_at, type: TEXT, constraints: { nullable: false } }
-              - column: { name: updated_at, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: created_at,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: updated_at,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
 
         - createTable:
             tableName: invoice_sequences
             columns:
-              - column: { name: year, type: INTEGER, constraints: { primaryKey: true, nullable: false } }
-              - column: { name: last_number, type: INTEGER, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: year,
+                    type: INTEGER,
+                    constraints: { primaryKey: true, nullable: false },
+                  }
+              - column:
+                  {
+                    name: last_number,
+                    type: INTEGER,
+                    constraints: { nullable: false },
+                  }
 
         - createTable:
             tableName: invoices
             columns:
-              - column: { name: id, type: TEXT, constraints: { primaryKey: true, nullable: false } }
-              - column: { name: status, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: id,
+                    type: TEXT,
+                    constraints: { primaryKey: true, nullable: false },
+                  }
+              - column:
+                  { name: status, type: TEXT, constraints: { nullable: false } }
               - column: { name: invoice_number, type: TEXT }
-              - column: { name: invoice_date, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: invoice_date,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
               - column: { name: service_date, type: TEXT }
-              - column: { name: customer_id, type: TEXT, constraints: { nullable: false } }
-              - column: { name: currency, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: customer_id,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: currency,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
               - column: { name: notes, type: TEXT }
-              - column: { name: net_total, type: NUMERIC, constraints: { nullable: false } }
-              - column: { name: tax_total, type: NUMERIC, constraints: { nullable: false } }
-              - column: { name: gross_total, type: NUMERIC, constraints: { nullable: false } }
-              - column: { name: created_at, type: TEXT, constraints: { nullable: false } }
-              - column: { name: updated_at, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: net_total,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: tax_total,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: gross_total,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: created_at,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: updated_at,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
 
         - createIndex:
             tableName: invoices
@@ -52,20 +135,179 @@ databaseChangeLog:
         - createTable:
             tableName: invoice_items
             columns:
-              - column: { name: id, type: TEXT, constraints: { primaryKey: true, nullable: false } }
-              - column: { name: invoice_id, type: TEXT, constraints: { nullable: false } }
-              - column: { name: position, type: INTEGER, constraints: { nullable: false } }
-              - column: { name: title, type: TEXT, constraints: { nullable: false } }
-              - column: { name: quantity, type: NUMERIC, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: id,
+                    type: TEXT,
+                    constraints: { primaryKey: true, nullable: false },
+                  }
+              - column:
+                  {
+                    name: invoice_id,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: position,
+                    type: INTEGER,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  { name: title, type: TEXT, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: quantity,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
               - column: { name: unit, type: TEXT }
-              - column: { name: unit_price_net, type: NUMERIC, constraints: { nullable: false } }
-              - column: { name: tax_rate, type: NUMERIC, constraints: { nullable: false } }
-              - column: { name: net_total, type: NUMERIC, constraints: { nullable: false } }
-              - column: { name: tax_total, type: NUMERIC, constraints: { nullable: false } }
-              - column: { name: gross_total, type: NUMERIC, constraints: { nullable: false } }
+              - column:
+                  {
+                    name: unit_price_net,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: tax_rate,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: net_total,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: tax_total,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: gross_total,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
 
         - createIndex:
             tableName: invoice_items
             indexName: ix_invoice_items_invoice
             columns:
               - column: { name: invoice_id }
+
+  - changeSet:
+      id: "2"
+      author: mirac
+      changes:
+        - createTable:
+            tableName: items
+            columns:
+              - column:
+                  {
+                    name: id,
+                    type: TEXT,
+                    constraints: { primaryKey: true, nullable: false },
+                  }
+              - column:
+                  { name: name, type: TEXT, constraints: { nullable: false } }
+              - column: { name: description, type: TEXT }
+              - column: { name: default_unit, type: TEXT }
+              - column:
+                  {
+                    name: default_tax_rate,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: unit_price_net,
+                    type: NUMERIC,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: active,
+                    type: BOOLEAN,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: created_at,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: updated_at,
+                    type: TEXT,
+                    constraints: { nullable: false },
+                  }
+
+        - createIndex:
+            tableName: items
+            indexName: ix_items_name
+            columns:
+              - column: { name: name }
+
+        - addColumn:
+            tableName: invoice_items
+            columns:
+              - column: { name: item_id, type: TEXT }
+
+        - createIndex:
+            tableName: invoice_items
+            indexName: ix_invoice_items_item
+            columns:
+              - column: { name: item_id }
+
+  - changeSet:
+      id: "3"
+      author: mirac
+      changes:
+        - createIndex:
+            tableName: customers
+            indexName: ix_customers_email
+            columns:
+              - column: { name: email }
+
+        - createIndex:
+            tableName: invoices
+            indexName: ix_invoices_customer
+            columns:
+              - column: { name: customer_id }
+
+  - changeSet:
+      id: "4"
+      author: mirac
+      dbms: postgresql,mysql,mariadb
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: invoices
+            baseColumnNames: customer_id
+            referencedTableName: customers
+            referencedColumnNames: id
+            constraintName: fk_invoices_customer
+            onDelete: RESTRICT
+            onUpdate: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: invoice_items
+            baseColumnNames: invoice_id
+            referencedTableName: invoices
+            referencedColumnNames: id
+            constraintName: fk_invoice_items_invoice
+            onDelete: CASCADE
+            onUpdate: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: invoice_items
+            baseColumnNames: item_id
+            referencedTableName: items
+            referencedColumnNames: id
+            constraintName: fk_invoice_items_item
+            onDelete: SET NULL
+            onUpdate: CASCADE

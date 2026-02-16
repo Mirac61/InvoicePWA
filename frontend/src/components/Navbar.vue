@@ -1,8 +1,7 @@
-<!-- frontend/src/components/Navbar.vue -->
 <script setup lang="ts">
 import { computed } from "vue";
 
-type NavKey = "home" | "invoices" | "customers" | "settings";
+type NavKey = "start" | "invoices" | "customers" | "positions" | "settings";
 
 const props = defineProps<{
   active?: NavKey;
@@ -12,68 +11,78 @@ const emit = defineEmits<{
   navigate: [key: NavKey];
 }>();
 
-const activeKey = computed<NavKey>(() => props.active ?? "home");
+const activeKey = computed<NavKey>(() => props.active ?? "start");
 
-const items: Array<{ key: NavKey; label: string }> = [
-  { key: "home", label: "Start" },
-  { key: "invoices", label: "Rechnungen" },
-  { key: "customers", label: "Kunden" },
-  { key: "settings", label: "Einstellungen" },
+// Navigation items for the navbar
+const navItems: Array<{ key: NavKey; label: string }> = [
+  { key: "start", label: "Dashboard" },
+  { key: "invoices", label: "Invoices" },
+  { key: "customers", label: "Customers" },
+  { key: "positions", label: "Items" },
+  { key: "settings", label: "Settings" },
 ];
 
-function go(key: NavKey) {
+// Handles navigation event
+function navigateTo(key: NavKey) {
   emit("navigate", key);
 }
 </script>
 
 <template>
-  <header class="navigations-leiste" role="banner">
-    <div class="leisten-links">
-      <div class="app-name" aria-label="App Name">Rechnung</div>
+  <header class="navbar" role="banner">
+    <div class="navbar-left">
+      <div class="app-name" aria-label="App Name">Invoice Manager</div>
       <span class="badge" aria-label="Status">Beta</span>
     </div>
 
-    <nav class="nav" aria-label="Hauptnavigation">
-      <button
-        v-for="it in items"
-        :key="it.key"
-        class="tab"
-        :class="{ active: it.key === activeKey }"
-        type="button"
-        :aria-current="it.key === activeKey ? 'page' : undefined"
-        @click="go(it.key)"
-      >
-        {{ it.label }}
-      </button>
-    </nav>
+    <div class="navbar-center">
+      <nav class="nav-pill" aria-label="Main navigation">
+        <button
+          v-for="item in navItems"
+          :key="item.key"
+          class="nav-tab"
+          :class="{ 'is-active': item.key === activeKey }"
+          type="button"
+          :aria-current="item.key === activeKey ? 'page' : undefined"
+          @click="navigateTo(item.key)"
+        >
+          {{ item.label }}
+        </button>
+      </nav>
+    </div>
 
-    <div class="right">
-      <button class="primary" type="button" @click="go('invoices')">
-        Neue Rechnung
+    <div class="navbar-right">
+      <button class="button-primary" type="button" @click="navigateTo('invoices')">
+        New Invoice
       </button>
     </div>
   </header>
 </template>
 
 <style scoped>
-.navigations-leiste {
+.navbar {
   position: sticky;
   top: 0;
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   padding: 12px 16px;
   background: #0b1220;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.leisten-links {
+/* Left and right sections have fixed width to keep the center truly centered */
+.navbar-left,
+.navbar-right {
+  flex: 0 0 220px;
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 160px;
+}
+
+.navbar-right {
+  justify-content: flex-end;
 }
 
 .app-name {
@@ -81,6 +90,7 @@ function go(key: NavKey) {
   font-weight: 800;
   letter-spacing: 0.2px;
   color: #ffffff;
+  white-space: nowrap;
 }
 
 .badge {
@@ -89,9 +99,18 @@ function go(key: NavKey) {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
 }
 
-.nav {
+/* Center section takes remaining space and centers the navigation pill */
+.navbar-center {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Navigation pill remains visually compact and precisely centered */
+.nav-pill {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -100,42 +119,43 @@ function go(key: NavKey) {
   background: rgba(255, 255, 255, 0.06);
   overflow-x: auto;
   scrollbar-width: none;
+  max-width: 720px;
+  min-height: 48px;
 }
-.nav::-webkit-scrollbar {
+.nav-pill::-webkit-scrollbar {
   display: none;
 }
 
-.tab {
+.nav-tab {
   appearance: none;
   border: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.78);
-  padding: 10px 12px;
+  height: 32px;
+  padding: 0 14px;
   border-radius: 12px;
   font-size: 14px;
-  line-height: 1;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 32px;
+  -webkit-font-smoothing: antialiased;
 }
 
-.tab:hover {
+.nav-tab:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
 
-.tab.active {
+.nav-tab.is-active {
   background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
 }
 
-.right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 160px;
-}
-
-.primary {
+.button-primary {
   appearance: none;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: #ffffff;
@@ -147,15 +167,36 @@ function go(key: NavKey) {
   cursor: pointer;
 }
 
-.primary:hover {
+.button-primary:hover {
   opacity: 0.92;
+}
+
+@media (max-width: 900px) {
+  .navbar-left,
+  .navbar-right {
+    flex: 0 0 180px;
+  }
+  .nav-pill {
+    max-width: 560px;
+  }
 }
 
 @media (max-width: 720px) {
   .badge {
     display: none;
   }
-  .primary {
+  .navbar-left,
+  .navbar-right {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+  .navbar-center {
+    justify-content: flex-start;
+  }
+  .nav-pill {
+    max-width: 100%;
+  }
+  .button-primary {
     padding: 10px 10px;
   }
 }

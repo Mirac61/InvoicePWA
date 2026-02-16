@@ -1,4 +1,4 @@
-<!-- src/components/HealthCard.vue -->
+<!-- src/components/HealthStatus.vue -->
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 
@@ -9,42 +9,44 @@ interface HealthResponse {
 }
 
 const health = ref<HealthResponse | null>(null);
-const loading = ref(true);
-const error = ref("");
+const isLoading = ref(true);
+const errorMessage = ref("");
 
-async function load(): Promise<void> {
-  loading.value = true;
-  error.value = "";
+// Loads the backend health status from the API
+async function loadHealthStatus(): Promise<void> {
+  isLoading.value = true;
+  errorMessage.value = "";
 
   try {
     const res = await fetch("/api/health");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     health.value = (await res.json()) as HealthResponse;
   } catch (e) {
-    error.value = e instanceof Error ? e.message : "Unbekannter Fehler";
+    errorMessage.value =
+      e instanceof Error ? e.message : "An unknown error occurred.";
   } finally {
-    loading.value = false;
+    isLoading.value = false;
   }
 }
 
-onMounted(load);
+onMounted(loadHealthStatus);
 </script>
 
 <template>
-  <section class="systemstatus-karte">
+  <section class="health-status-card">
     <div class="row">
       <h2>Backend Status</h2>
-      <button class="neu-laden-button" type="button" @click="load">Neu laden</button>
+      <button class="reload-button" type="button" @click="loadHealthStatus">Reload</button>
     </div>
 
-    <p v-if="loading">Lade...</p>
-    <p v-else-if="error">Fehler: {{ error }}</p>
+    <p v-if="isLoading">Loading...</p>
+    <p v-else-if="errorMessage">Error: {{ errorMessage }}</p>
     <pre v-else>{{ health }}</pre>
   </section>
 </template>
 
 <style scoped>
-.systemstatus-karte {
+.health-status-card {
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;
   padding: 14px;
@@ -57,14 +59,14 @@ onMounted(load);
   justify-content: space-between;
   gap: 12px;
 }
-.neu-laden-button {
+.reload-button {
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: #fff;
   border-radius: 12px;
   padding: 10px 12px;
   cursor: pointer;
 }
-.neu-laden-button:hover {
+.reload-button:hover {
   background: rgba(0, 0, 0, 0.04);
 }
 pre {

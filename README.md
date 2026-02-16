@@ -1,43 +1,70 @@
-# Invoice App (Vue.js + Spring Boot)
 
-Dieses Projekt ist jetzt bewusst einfach aufgebaut:
+# Invoice App
 
-- `backend/invoice-backend`: Spring Boot API (Port `8080`)
-- `frontend`: Vue 3 + Vite (Port `5173`)
+Web App für Rechnungen, Kunden und Positionen. Frontend mit Vue 3 und Vite. Backend mit Spring Boot.
+
+## Projektstruktur
+
+1. backend/invoice-backend, Spring Boot API, Port 8080
+2. frontend, Vue 3 App, Port 5173
 
 ## Voraussetzungen
 
-- Java 21
-- Node.js 20+
-- npm 10+
+1. Git
+2. Java 21
+3. Node.js 20 oder neuer
+4. npm 10 oder neuer
 
-## Ein Befehl fuer alles
+Optional für das Start Script unter Windows
+
+1. Git Bash
+
+## Schnellstart
+
+### 1) Projekt klonen
 
 ```bash
-cd /Users/mirac/invoice-app
+git clone <REPO_URL>
+cd invoice-app
+```
+
+### 2) Start mit einem Befehl
+
+macOS oder Linux
+
+```bash
+chmod +x dev.sh
 ./dev.sh
 ```
 
-Dann oeffnen:
+Windows mit Git Bash
 
-- http://localhost:5173
+```bash
+bash dev.sh
+```
 
-## Manuell (optional)
+Danach öffnen
 
-## 1) Backend starten
+1. Frontend: http://localhost:5173
+2. Backend Health: http://localhost:8080/api/health
+
+## Manuell starten
+
+### 1) Backend starten
 
 ```bash
 cd backend/invoice-backend
+./mvnw clean package
 ./mvnw spring-boot:run
 ```
 
-Test im Browser:
+Backend prüfen
 
-- http://localhost:8080/api/health
+1. http://localhost:8080/api/health
 
-## 2) Frontend starten
+### 2) Frontend starten
 
-Neues Terminal:
+Neues Terminal öffnen
 
 ```bash
 cd frontend
@@ -45,30 +72,92 @@ npm install
 npm run dev
 ```
 
-Dann öffnen:
+Frontend öffnen
 
-- http://localhost:5173
+1. http://localhost:5173
 
-## Troubleshooting
+## Verbindung Frontend zu Backend
 
-- Wenn Maven wegen Rechten auf `~/.m2` fehlschlägt:
+Das Frontend ruft Endpunkte unter /api auf. Vite leitet /api an das Backend weiter.
+
+Vite Proxy Einstellung findest du in
+
+1. frontend/vite.config.ts oder frontend/vite.config.js
+
+## Typische Probleme
+
+### Port ist belegt
+
+Wenn das Frontend nicht auf 5173 startet, zeigt Vite den neuen Port in der Konsole.
+
+Du kannst auch fix starten
+
+```bash
+cd frontend
+npm run dev -- --port 5173
+```
+
+### Backend startet nicht
+
+Prüfe zuerst den Build
 
 ```bash
 cd backend/invoice-backend
-./mvnw -Dmaven.repo.local=./.m2 spring-boot:run
+./mvnw clean package
 ```
 
-- Wenn `npm install` oder Maven keine Pakete laden können, fehlt Netzwerkzugriff in deiner Umgebung.
-- `dev.sh` nutzt bereits `-Dmaven.repo.local=./.m2`, damit kein Schreibzugriff auf `~/.m2` noetig ist.
+Wenn das fehlschlägt, lies den ersten ERROR Block in der Konsole.
 
-## Wie Frontend und Backend verbunden sind
+### Java Version passt nicht
 
-- Das Vue-Frontend ruft `/api/health` auf.
-- Vite leitet `/api/*` automatisch an `http://localhost:8080` weiter (`frontend/vite.config.js`).
+Prüfen
 
-## Nächste sinnvolle Schritte
+```bash
+java -version
+```
 
-1. Invoice- und Customer-Modelle als JPA-Entities hinzufügen.
-2. REST-Endpunkte für `GET/POST /api/invoices` bauen.
-3. Vue-Ansichten für Liste + Formular bauen.
-4. Später PDF-Export und einfache Auth ergänzen.
+Du brauchst Java 21.
+
+### Node Version passt nicht
+
+Prüfen
+
+```bash
+node -v
+npm -v
+```
+
+Du brauchst Node 20 oder neuer.
+
+### Frontend hat API Fehler, Backend läuft
+
+1. Öffne http://localhost:8080/api/health
+2. Prüfe die Proxy Einstellung in vite.config
+3. Prüfe in der Browser Konsole, ob Calls auf /api gehen
+
+## Nützliche Befehle
+
+Backend Tests
+
+```bash
+cd backend/invoice-backend
+./mvnw test
+```
+
+Frontend Build
+
+```bash
+cd frontend
+npm run build
+```
+
+Frontend Preview
+
+```bash
+cd frontend
+npm run preview
+```
+
+## Lizenz
+
+Private Nutzung für dieses Projekt. Passe das an, wenn du es öffentlich freigibst.
