@@ -1,7 +1,16 @@
 :root {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #1f2937;
-  background-color: #f4f6f8;
+  
+  --primary-accent-color: #072AC8;
+  --secondary-accent-color: #000814;
+
+  --primary-background-color: #F5F5F5;
+  --seoncdary-background-color: #E2E2E2;
+
+  --primary-text-color: #090909;
+
+  font-family: 'Aspekta', sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -12,43 +21,3 @@ body {
   margin: 0;
 }
 
-.container {
-  max-width: 760px;
-  margin: 40px auto;
-  padding: 24px;
-}
-
-.card {
-  margin-top: 20px;
-  padding: 16px;
-  border-radius: 10px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-}
-
-h1,
-h2 {
-  margin-top: 0;
-}
-
-pre {
-  padding: 12px;
-  border-radius: 6px;
-  background: #111827;
-  color: #f9fafb;
-  overflow-x: auto;
-}
-
-button {
-  margin-top: 12px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: #0f766e;
-  color: #fff;
-}
-
-button:hover {
-  background: #115e59;
-}
