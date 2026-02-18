@@ -24,7 +24,7 @@ Optional für das Start Script unter Windows
 ### 1) Projekt klonen
 
 ```bash
-git clone <REPO_URL>
+git clone https://github.com/Mirac61/InvoicePWA.git
 cd invoice-app
 ```
 
