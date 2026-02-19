@@ -1,6 +1,9 @@
 <template>
   <div class="creator-layout">
-    <!-- LEFT PANEL: Editor -->
+
+    <!-- ═══════════════════════════════════════════════════════════
+         LEFT PANEL — Editor
+    ════════════════════════════════════════════════════════════ -->
     <aside class="editor-panel">
       <div class="editor-header">
         <h2 class="editor-title">Creator</h2>
@@ -13,17 +16,21 @@
           v-for="(section, index) in sections"
           :key="section.id"
           class="section-card"
-          :class="{ 'section-card--active': activeSection === section.id }"
+          :class="{
+            'section-card--active':   activeSection === section.id,
+            'section-card--dragging': dragIndex === index,
+            'section-card--dragover': dragOverIndex === index && dragIndex !== index,
+          }"
           draggable="true"
           @dragstart="onDragStart($event, index)"
           @dragover.prevent="onDragOver($event, index)"
           @drop="onDrop($event, index)"
           @dragend="onDragEnd"
         >
+          <!-- Card Header -->
           <div class="section-card__header" @click="toggleSection(section.id)">
             <div class="section-card__left">
-              <span class="drag-handle">⠿</span>
-              <span class="section-icon">{{ section.icon }}</span>
+              <span class="drag-handle" @click.stop>⠿</span>
               <span class="section-name">{{ section.label }}</span>
             </div>
             <div class="section-card__right">
@@ -36,23 +43,50 @@
             </div>
           </div>
 
-          <!-- Section Content -->
+          <!-- Card Body -->
           <transition name="slide">
             <div v-if="activeSection === section.id" class="section-card__body">
 
-              <!-- HEADER SECTION -->
+              <!-- ── HEADER / Unternehmen ─────────────────────────── -->
               <template v-if="section.type === 'header'">
                 <div class="field-group">
-                  <label>Firmen-Logo</label>
-                  <div class="logo-upload" @click="triggerLogoUpload">
-                    <img v-if="invoiceData.logo" :src="invoiceData.logo" class="logo-preview" alt="Logo" />
+                  <label>Bild des Logos hochladen</label>
+                  <div
+                    class="logo-upload"
+                    :class="{ 'logo-upload--has-file': !!invoiceData.logo, 'logo-upload--dragover': logoDragOver }"
+                    @click="triggerLogoUpload"
+                    @dragover.prevent="logoDragOver = true"
+                    @dragleave="logoDragOver = false"
+                    @drop.prevent="onLogoDrop"
+                  >
+                    <img
+                      v-if="invoiceData.logo"
+                      :src="invoiceData.logo"
+                      class="logo-preview"
+                      alt="Firmenlogo"
+                    />
                     <template v-else>
-                      <span class="logo-upload__icon">↑</span>
-                      <span>Datei auswählen</span>
+                      <span class="logo-upload__arrow">↑</span>
+                      <span class="logo-upload__label">
+                        <button class="logo-upload__btn" type="button">Datei auswählen</button>
+                        <span v-if="invoiceData.logoName">&nbsp;{{ invoiceData.logoName }}</span>
+                        <span v-else class="logo-upload__hint">&nbsp;oder hierher ziehen</span>
+                      </span>
                     </template>
-                    <input ref="logoInput" type="file" accept="image/*" style="display:none" @change="onLogoUpload" />
+                    <input
+                      ref="logoInputRef"
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                      style="display:none"
+                      @change="onLogoFileChange"
+                    />
                   </div>
-                  <span v-if="invoiceData.logo" class="logo-filename" @click="invoiceData.logo = ''">✕ Logo entfernen</span>
+                  <button
+                    v-if="invoiceData.logo"
+                    class="logo-remove"
+                    type="button"
+                    @click.stop="invoiceData.logo = ''; invoiceData.logoName = ''"
+                  >✕ Logo entfernen</button>
                 </div>
                 <div class="field-row">
                   <div class="field-group">
@@ -82,37 +116,38 @@
                 </div>
               </template>
 
-              <!-- CUSTOMER SECTION -->
+              <!-- ── CUSTOMER / Kundendaten ─────────────────────── -->
               <template v-if="section.type === 'customer'">
                 <div class="field-row">
                   <div class="field-group">
-                    <label>Kunden-Name</label>
+                    <label>Kundenname</label>
                     <input v-model="invoiceData.customerName" type="text" placeholder="Max Mustermann" />
                   </div>
                 </div>
                 <div class="field-row">
                   <div class="field-group">
-                    <label>Straße & Nr.</label>
+                    <label>Straße und Nummer</label>
                     <input v-model="invoiceData.customerStreet" type="text" placeholder="Berliner Straße 41" />
                   </div>
                   <div class="field-group">
-                    <label>PLZ & Stadt</label>
+                    <label>PLZ, Stadt</label>
                     <input v-model="invoiceData.customerCity" type="text" placeholder="12450 Musterstadt" />
                   </div>
                 </div>
                 <div class="field-row">
                   <div class="field-group">
-                    <label>Kunden-Nr.</label>
+                    <label>Kundennummer</label>
                     <input v-model="invoiceData.customerId" type="text" placeholder="469332" />
                   </div>
                 </div>
+                <button class="btn-add-entry" type="button">+ Weiterer Eintrag</button>
               </template>
 
-              <!-- META SECTION -->
+              <!-- ── META / Rechnungsinfo ────────────────────────── -->
               <template v-if="section.type === 'meta'">
                 <div class="field-row">
                   <div class="field-group">
-                    <label>Rechnungs-Nr.</label>
+                    <label>Rechnungsnummer</label>
                     <input v-model="invoiceData.invoiceNumber" type="text" placeholder="10230445" />
                   </div>
                   <div class="field-group">
@@ -126,85 +161,98 @@
                     <input v-model="invoiceData.dueDate" type="date" />
                   </div>
                 </div>
+                <button class="btn-add-entry" type="button">+ Weiterer Eintrag</button>
+              </template>
+
+              <!-- ── GREETING / Anrede ───────────────────────────── -->
+              <template v-if="section.type === 'greeting'">
                 <div class="field-group">
-                  <label>Anrede / Einleitung</label>
-                  <textarea v-model="invoiceData.intro" rows="3" placeholder="Sehr geehrter Herr Mustermann,\nvielen Dank für Ihren Auftrag..."></textarea>
+                  <label>Rechnungsnummer</label>
+                  <textarea
+                    v-model="invoiceData.intro"
+                    rows="5"
+                    placeholder="Sehr geehrte/r Frau/Herr Mustermann, vielen dank..."
+                  ></textarea>
                 </div>
               </template>
 
-              <!-- TABLE SECTION -->
+              <!-- ── TABLE / Tabelle ────────────────────────────── -->
               <template v-if="section.type === 'table'">
-                <div class="table-builder">
-                  <div class="table-builder__columns">
-                    <label>Spalten konfigurieren</label>
-                    <div class="column-tags">
-                      <div
+
+                <!-- Column configurator -->
+                <div class="table-section-group">
+                  <span class="table-section-label">Spalten konfigurieren</span>
+                  <div class="column-list">
+                    <div v-for="(col, ci) in invoiceData.tableColumns" :key="ci" class="column-row">
+                      <input
+                        v-model="col.label"
+                        type="text"
+                        class="column-name-input"
+                        placeholder="Spaltenname"
+                      />
+                      <select v-model="col.align" class="column-align-select">
+                        <option value="left">L</option>
+                        <option value="center">M</option>
+                        <option value="right">R</option>
+                      </select>
+                      <button class="btn-icon btn-icon--danger" @click="removeColumn(ci)">✕</button>
+                    </div>
+                  </div>
+                  <button class="btn-add-col" type="button" @click="addColumn">+ Spalte</button>
+                </div>
+
+                <!-- Row editor -->
+                <div class="table-section-group">
+                  <span class="table-section-label">Zeileneinträge</span>
+                  <div v-for="(row, ri) in invoiceData.tableRows" :key="ri" class="row-editor">
+                    <span class="row-num">{{ ri + 1 }}</span>
+                    <div class="row-cells">
+                      <input
                         v-for="(col, ci) in invoiceData.tableColumns"
                         :key="ci"
-                        class="column-tag"
-                      >
-                        <input v-model="col.label" type="text" class="column-tag__input" />
-                        <select v-model="col.align" class="column-tag__align">
-                          <option value="left">L</option>
-                          <option value="center">C</option>
-                          <option value="right">R</option>
-                        </select>
-                        <button class="column-tag__remove" @click="removeColumn(ci)">✕</button>
-                      </div>
-                      <button class="btn-add-col" @click="addColumn">+ Spalte</button>
+                        v-model="row.cells[ci]"
+                        type="text"
+                        :placeholder="col.label"
+                        class="row-cell-input"
+                      />
+                    </div>
+                    <button class="btn-icon btn-icon--danger" @click="removeRow(ri)">✕</button>
+                  </div>
+                  <button class="btn-add-row" type="button" @click="addRow">+ Position hinzufügen</button>
+                </div>
+
+                <!-- Totals configuration -->
+                <div class="table-section-group">
+                  <span class="table-section-label">Summen</span>
+                  <div class="field-row">
+                    <div class="field-group">
+                      <label>MwSt. (%)</label>
+                      <input v-model.number="invoiceData.taxRate" type="number" min="0" max="100" placeholder="19" />
+                    </div>
+                    <div class="field-group">
+                      <label>Rabatt (%)</label>
+                      <input v-model.number="invoiceData.discountRate" type="number" min="0" max="100" placeholder="0" />
                     </div>
                   </div>
-
-                  <div class="table-rows-editor">
-                    <label>Positionen</label>
-                    <div
-                      v-for="(row, ri) in invoiceData.tableRows"
-                      :key="ri"
-                      class="table-row-editor"
-                    >
-                      <span class="row-num">{{ ri + 1 }}</span>
-                      <div class="row-cells">
-                        <input
-                          v-for="(col, ci) in invoiceData.tableColumns"
-                          :key="ci"
-                          v-model="row.cells[ci]"
-                          type="text"
-                          :placeholder="col.label"
-                          class="row-cell-input"
-                        />
-                      </div>
-                      <button class="btn-icon btn-icon--danger" @click="removeRow(ri)">✕</button>
-                    </div>
-                    <button class="btn-add-row" @click="addRow">+ Position hinzufügen</button>
-                  </div>
-
-                  <div class="totals-config">
-                    <label>Summen</label>
-                    <div class="field-row">
-                      <div class="field-group">
-                        <label>MwSt. (%)</label>
-                        <input v-model.number="invoiceData.taxRate" type="number" min="0" max="100" placeholder="19" />
-                      </div>
-                      <div class="field-group">
-                        <label>Rabatt (%)</label>
-                        <input v-model.number="invoiceData.discountRate" type="number" min="0" max="100" placeholder="0" />
-                      </div>
-                    </div>
-                    <div class="toggle-row">
-                      <label class="toggle-label">
-                        <input type="checkbox" v-model="invoiceData.showSubtotal" />
-                        Zwischensumme anzeigen
-                      </label>
-                      <label class="toggle-label">
-                        <input type="checkbox" v-model="invoiceData.showTax" />
-                        MwSt. anzeigen
-                      </label>
-                    </div>
+                  <div class="toggle-grid">
+                    <label class="toggle-label">
+                      <input type="checkbox" v-model="invoiceData.showSubtotal" />
+                      Zwischensumme anzeigen
+                    </label>
+                    <label class="toggle-label">
+                      <input type="checkbox" v-model="invoiceData.showTax" />
+                      MwSt. anzeigen
+                    </label>
+                    <label class="toggle-label">
+                      <input type="checkbox" v-model="invoiceData.showDiscount" />
+                      Rabatte anzeigen
+                    </label>
                   </div>
                 </div>
+
               </template>
 
-              <!-- BANKING SECTION -->
+              <!-- ── BANKING / Bankverbindung ───────────────────── -->
               <template v-if="section.type === 'banking'">
                 <div class="field-row">
                   <div class="field-group">
@@ -222,17 +270,19 @@
                     <input v-model="invoiceData.bic" type="text" placeholder="DBKEDFHH" />
                   </div>
                 </div>
-                <div class="field-group">
-                  <label>Zahlungsziel (Text)</label>
-                  <input v-model="invoiceData.paymentNote" type="text" placeholder="Bitte überweisen Sie den Betrag bis zum..." />
+                <div class="field-row">
+                  <div class="field-group">
+                    <label>Zahlungsziel (Text)</label>
+                    <input v-model="invoiceData.paymentNote" type="text" placeholder="Bitte überweisen Sie den Betrag bis zum..." />
+                  </div>
                 </div>
               </template>
 
-              <!-- FOOTER SECTION -->
+              <!-- ── FOOTER / Abschluss ─────────────────────────── -->
               <template v-if="section.type === 'footer'">
                 <div class="field-group">
                   <label>Schlusstext</label>
-                  <textarea v-model="invoiceData.closingText" rows="2" placeholder="Wir bedanken uns für Ihren Auftrag."></textarea>
+                  <textarea v-model="invoiceData.closingText" rows="3" placeholder="Wir bedanken uns für Ihren Auftrag."></textarea>
                 </div>
                 <div class="field-group">
                   <label>Fußzeile</label>
@@ -253,15 +303,18 @@
             v-for="avail in availableSectionsToAdd"
             :key="avail.type"
             class="btn-add-section"
+            type="button"
             @click="addSection(avail.type)"
           >
-            <span>{{ avail.icon }}</span> {{ avail.label }}
+            {{ avail.label }}
           </button>
         </div>
       </div>
     </aside>
 
-    <!-- RIGHT PANEL: Preview -->
+    <!-- ═══════════════════════════════════════════════════════════
+         RIGHT PANEL — Preview
+    ════════════════════════════════════════════════════════════ -->
     <main class="preview-panel">
       <div class="preview-header">
         <h2 class="editor-title">Vorschau</h2>
@@ -271,9 +324,6 @@
             <option value="modern">Modern</option>
             <option value="minimal">Minimal</option>
           </select>
-          <button class="btn-download" @click="downloadPDF">
-            <span>↓</span> Als PDF herunterladen
-          </button>
         </div>
       </div>
 
@@ -284,16 +334,15 @@
             class="invoice-preview"
             :class="`template--${selectedTemplate}`"
           >
-            <!-- Render sections in order -->
             <template v-for="section in sections" :key="section.id">
 
               <!-- HEADER -->
               <div v-if="section.type === 'header'" class="inv-header">
                 <div class="inv-header__logo">
-                  <img v-if="invoiceData.logo" :src="invoiceData.logo" alt="Logo" class="inv-logo-img" />
+                  <img v-if="invoiceData.logo" :src="invoiceData.logo" class="inv-logo-img" alt="Logo" />
                   <div v-else class="inv-logo-placeholder">
                     <span class="inv-logo-dot"></span>
-                    <span class="inv-logo-text">{{ invoiceData.companyName || 'Logo' }}</span>
+                    <span class="inv-logo-wordmark">{{ invoiceData.companyName || 'Logo' }}</span>
                   </div>
                 </div>
                 <div class="inv-header__company">
@@ -303,27 +352,39 @@
                 </div>
               </div>
 
-              <!-- CUSTOMER + META -->
-              <div v-if="section.type === 'customer'" class="inv-addresses">
-                <div class="inv-from">
-                  <p>{{ invoiceData.customerName }}</p>
-                  <p>{{ invoiceData.customerStreet }}</p>
-                  <p>{{ invoiceData.customerCity }}</p>
-                </div>
+              <!-- CUSTOMER -->
+              <div v-if="section.type === 'customer'" class="inv-customer">
+                <p>{{ invoiceData.customerName }}</p>
+                <p>{{ invoiceData.customerStreet }}</p>
+                <p>{{ invoiceData.customerCity }}</p>
               </div>
 
               <!-- META -->
               <div v-if="section.type === 'meta'" class="inv-meta">
-                <div class="inv-meta__left">
-                  <p v-if="invoiceData.invoiceNumber"><span>Rechnungs-Nr.:</span> {{ invoiceData.invoiceNumber }}</p>
-                  <p v-if="invoiceData.customerId"><span>Kunden-Nr.:</span> {{ invoiceData.customerId }}</p>
-                  <p v-if="invoiceData.invoiceDate"><span>Rechnungsdatum:</span> {{ formatDate(invoiceData.invoiceDate) }}</p>
-                  <p v-if="invoiceData.dueDate"><span>Fälligkeitsdatum:</span> {{ formatDate(invoiceData.dueDate) }}</p>
+                <div class="inv-meta__grid">
+                  <template v-if="invoiceData.invoiceNumber">
+                    <span class="inv-meta__key">Rechnungs-Nr.:</span>
+                    <span>{{ invoiceData.invoiceNumber }}</span>
+                  </template>
+                  <template v-if="invoiceData.customerId">
+                    <span class="inv-meta__key">Kunden-Nr.:</span>
+                    <span>{{ invoiceData.customerId }}</span>
+                  </template>
+                  <template v-if="invoiceData.invoiceDate">
+                    <span class="inv-meta__key">Rechnungsdatum:</span>
+                    <span>{{ formatDate(invoiceData.invoiceDate) }}</span>
+                  </template>
+                  <template v-if="invoiceData.dueDate">
+                    <span class="inv-meta__key">Fälligkeitsdatum:</span>
+                    <span>{{ formatDate(invoiceData.dueDate) }}</span>
+                  </template>
                 </div>
-                <div v-if="invoiceData.intro" class="inv-intro">
-                  <p v-if="invoiceData.invoiceNumber" class="inv-title">Ihre Rechnung</p>
-                  <p>{{ invoiceData.intro }}</p>
-                </div>
+              </div>
+
+              <!-- GREETING -->
+              <div v-if="section.type === 'greeting' && invoiceData.intro" class="inv-greeting">
+                <p class="inv-greeting__title">Ihre Rechnung</p>
+                <p class="inv-greeting__body">{{ invoiceData.intro }}</p>
               </div>
 
               <!-- TABLE -->
@@ -339,7 +400,11 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(row, ri) in invoiceData.tableRows" :key="ri">
+                    <tr
+                      v-for="(row, ri) in invoiceData.tableRows"
+                      :key="ri"
+                      :class="{ 'inv-tr--alt': ri % 2 === 1 }"
+                    >
                       <td
                         v-for="(col, ci) in invoiceData.tableColumns"
                         :key="ci"
@@ -351,35 +416,41 @@
 
                 <!-- Totals -->
                 <div class="inv-totals">
-                  <div v-if="invoiceData.showSubtotal && invoiceData.discountRate > 0" class="inv-totals__row inv-totals__row--sub">
+                  <div v-if="invoiceData.showSubtotal" class="inv-totals__row">
                     <span>Zwischensumme</span>
                     <span>{{ formatCurrency(subtotal) }}</span>
                   </div>
-                  <div v-if="invoiceData.discountRate > 0" class="inv-totals__row inv-totals__row--discount">
+                  <div
+                    v-if="invoiceData.showDiscount && invoiceData.discountRate > 0"
+                    class="inv-totals__row inv-totals__row--discount"
+                  >
                     <span>Rabatt ({{ invoiceData.discountRate }}%)</span>
                     <span>-{{ formatCurrency(discountAmount) }}</span>
                   </div>
-                  <div v-if="invoiceData.showTax && invoiceData.taxRate > 0" class="inv-totals__row">
+                  <div
+                    v-if="invoiceData.showTax && invoiceData.taxRate > 0"
+                    class="inv-totals__row inv-totals__row--tax"
+                  >
                     <span>MwSt. ({{ invoiceData.taxRate }}%)</span>
                     <span>{{ formatCurrency(taxAmount) }}</span>
                   </div>
-                  <div class="inv-totals__row inv-totals__row--total">
+                  <div class="inv-totals__row inv-totals__row--grand">
                     <span>Gesamtsumme</span>
-                    <span>{{ formatCurrency(total) }}</span>
+                    <span>{{ formatCurrency(grandTotal) }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- BANKING -->
               <div v-if="section.type === 'banking'" class="inv-banking">
-                <div class="inv-banking__left">
+                <div class="inv-banking__col">
                   <p>{{ invoiceData.companyName }}</p>
                   <p>{{ invoiceData.companyStreet }}</p>
                   <p>{{ invoiceData.companyCity }}</p>
                   <p v-if="invoiceData.taxId">USt-IdNr.: {{ invoiceData.taxId }}</p>
                   <p v-if="invoiceData.contact">Ansprechpartner: {{ invoiceData.contact }}</p>
                 </div>
-                <div class="inv-banking__right">
+                <div class="inv-banking__col inv-banking__col--right">
                   <p>{{ invoiceData.bankName }}</p>
                   <p v-if="invoiceData.iban">IBAN: {{ invoiceData.iban }}</p>
                   <p v-if="invoiceData.bic">BIC: {{ invoiceData.bic }}</p>
@@ -388,112 +459,92 @@
 
               <!-- FOOTER -->
               <div v-if="section.type === 'footer'" class="inv-footer">
-                <p v-if="invoiceData.paymentNote" class="inv-payment-note">{{ invoiceData.paymentNote }}</p>
-                <p v-if="invoiceData.closingText" class="inv-closing">{{ invoiceData.closingText }}</p>
-                <div v-if="invoiceData.footerText" class="inv-footer-bar">
-                  <p>{{ invoiceData.footerText }}</p>
-                </div>
+                <p v-if="invoiceData.paymentNote" class="inv-footer__payment">{{ invoiceData.paymentNote }}</p>
+                <p v-if="invoiceData.closingText" class="inv-footer__closing">{{ invoiceData.closingText }}</p>
+                <div v-if="invoiceData.footerText" class="inv-footer__bar">{{ invoiceData.footerText }}</div>
               </div>
 
             </template>
-          </div>
+          </div><!-- /invoice-preview -->
         </div>
       </div>
+
+      <!-- Sticky download bar -->
+      <div class="download-bar">
+        <button class="btn-download" type="button" @click="downloadPDF">
+          <Download :size="16" />
+          Als PDF herunterladen
+        </button>
+      </div>
     </main>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, nextTick } from 'vue'
+import { Download } from 'lucide-vue-next'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-interface TableColumn {
-  label: string
-  align: 'left' | 'center' | 'right'
-}
-
-interface TableRow {
-  cells: string[]
-}
+interface TableColumn { label: string; align: 'left' | 'center' | 'right' }
+interface TableRow    { cells: string[] }
 
 interface InvoiceData {
-  logo: string
-  companyName: string
-  companyStreet: string
-  companyCity: string
-  taxId: string
-  contact: string
-  customerName: string
-  customerStreet: string
-  customerCity: string
-  customerId: string
-  invoiceNumber: string
-  invoiceDate: string
-  dueDate: string
+  logo: string; logoName: string
+  companyName: string; companyStreet: string; companyCity: string
+  taxId: string; contact: string
+  customerName: string; customerStreet: string; customerCity: string; customerId: string
+  invoiceNumber: string; invoiceDate: string; dueDate: string
   intro: string
-  tableColumns: TableColumn[]
-  tableRows: TableRow[]
-  taxRate: number
-  discountRate: number
-  showSubtotal: boolean
-  showTax: boolean
-  bankName: string
-  iban: string
-  bic: string
-  paymentNote: string
-  closingText: string
-  footerText: string
+  tableColumns: TableColumn[]; tableRows: TableRow[]
+  taxRate: number; discountRate: number
+  showSubtotal: boolean; showTax: boolean; showDiscount: boolean
+  bankName: string; iban: string; bic: string; paymentNote: string
+  closingText: string; footerText: string
 }
 
-interface Section {
-  id: string
-  type: string
-  label: string
-  icon: string
-}
+interface SectionDef { id: string; type: string; label: string; icon: string }
 
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── All possible sections ────────────────────────────────────────────────────
 
-const selectedTemplate = ref<'classic' | 'modern' | 'minimal'>('classic')
-const activeSection = ref<string | null>(null)
-const logoInput = ref<HTMLInputElement | null>(null)
-
-const ALL_SECTION_TYPES: Omit<Section, 'id'>[] = [
-  { type: 'header',   label: 'Firmen-Header',  icon: '🏢' },
-  { type: 'customer', label: 'Kundendaten',     icon: '👤' },
-  { type: 'meta',     label: 'Rechnungsinfos',  icon: '📋' },
-  { type: 'table',    label: 'Positionen',      icon: '📊' },
-  { type: 'banking',  label: 'Bankverbindung',  icon: '🏦' },
-  { type: 'footer',   label: 'Abschluss',       icon: '✉️' },
+const ALL_SECTION_TYPES: Omit<SectionDef, 'id'>[] = [
+  { type: 'header',   label: 'Unternehmen',   icon: '' },
+  { type: 'customer', label: 'Kundendaten',    icon: '' },
+  { type: 'meta',     label: 'Rechnungsinfo',  icon: '' },
+  { type: 'greeting', label: 'Anrede',         icon: '' },
+  { type: 'table',    label: 'Tabelle',        icon: '' },
+  { type: 'banking',  label: 'Bankverbindung', icon: '' },
+  { type: 'footer',   label: 'Abschluss',      icon: '' },
 ]
 
-let idCounter = 0
-const makeId = () => `s-${++idCounter}`
+let _id = 0
+const uid = () => `s-${++_id}`
 
-const sections = ref<Section[]>([
-  { id: makeId(), type: 'header',   label: 'Firmen-Header', icon: '🏢' },
-  { id: makeId(), type: 'customer', label: 'Kundendaten',   icon: '👤' },
-  { id: makeId(), type: 'meta',     label: 'Rechnungsinfos',icon: '📋' },
-  { id: makeId(), type: 'table',    label: 'Positionen',    icon: '📊' },
-  { id: makeId(), type: 'banking',  label: 'Bankverbindung',icon: '🏦' },
-  { id: makeId(), type: 'footer',   label: 'Abschluss',     icon: '✉️' },
+// ─── State ────────────────────────────────────────────────────────────────────
+
+const selectedTemplate = ref<'classic' | 'modern' | 'minimal'>('classic')
+const activeSection    = ref<string | null>(null)
+const logoInputRef     = ref<HTMLInputElement | null>(null)
+const logoDragOver     = ref(false)
+
+const sections = ref<SectionDef[]>([
+  { id: uid(), type: 'header',   label: 'Unternehmen',   icon: '' },
+  { id: uid(), type: 'customer', label: 'Kundendaten',    icon: '' },
+  { id: uid(), type: 'meta',     label: 'Rechnungsinfo',  icon: '' },
+  { id: uid(), type: 'greeting', label: 'Anrede',         icon: '' },
+  { id: uid(), type: 'table',    label: 'Tabelle',        icon: '' },
+  { id: uid(), type: 'banking',  label: 'Bankverbindung', icon: '' },
+  { id: uid(), type: 'footer',   label: 'Abschluss',      icon: '' },
 ])
 
 const invoiceData = reactive<InvoiceData>({
-  logo: '',
-  companyName: 'Logo oHG',
-  companyStreet: 'Musterstraße 21',
-  companyCity: '73728 Esslingen am Neckar',
-  taxId: 'DE124356789',
-  contact: 'Anna Musterfrau',
-  customerName: 'Mustermann Hafengesellschaft GmbH',
-  customerStreet: 'Hafenbezirk 1',
-  customerCity: '21079 Hamburg',
-  customerId: '469332',
-  invoiceNumber: '10230445',
-  invoiceDate: '2026-03-14',
-  dueDate: '2026-03-29',
+  logo: '', logoName: '',
+  companyName: 'Logo oHG', companyStreet: 'Musterstraße 21', companyCity: '73728 Esslingen am Neckar',
+  taxId: 'DE124356789', contact: 'Anna Musterfrau',
+  customerName: 'Mustermann Hafengesellschaft GmbH', customerStreet: 'Hafenbezirk 1',
+  customerCity: '21079 Hamburg', customerId: '469332',
+  invoiceNumber: '10230445', invoiceDate: '2026-03-14', dueDate: '2026-03-29',
   intro: '',
   tableColumns: [
     { label: 'Position',       align: 'left'  },
@@ -503,17 +554,13 @@ const invoiceData = reactive<InvoiceData>({
     { label: 'Summe',          align: 'right' },
   ],
   tableRows: [
-    { cells: ['001', 'Prozessanalyse', 'Optimierung der Container-Abwicklung (Terminal 2)', '12 Std.', '1440,00€'] },
-    { cells: ['002', 'Sicherheits-Check', 'Jährliche Unterweisung Hafensicherheit (DGUV)', '1 Pauschale', '850,00€'] },
-    { cells: ['003', 'Fahrtkosten', 'Anfahrt Hamburg – Hafenbezirk 0,60 €/km', '690km', '414,00€'] },
+    { cells: ['001', 'Prozessanalyse',    'Optimierung der Container-Abwicklung (Terminal 2)', '12 Std.',     '1440,00€'] },
+    { cells: ['002', 'Sicherheits-Check', 'Jährliche Unterweisung Hafensicherheit (DGUV)',      '1 Pauschale', '850,00€']  },
+    { cells: ['003', 'Fahrtkosten',       'Anfahrt Hamburg – Hafenbezirk 0,60 €/km',            '690km',       '414,00€']  },
   ],
-  taxRate: 19,
-  discountRate: 10,
-  showSubtotal: true,
-  showTax: false,
-  bankName: 'Deutsche Bank',
-  iban: 'DE98 1213 6424 1111 3465 9752',
-  bic: 'DBKEDFHH',
+  taxRate: 19, discountRate: 10,
+  showSubtotal: true, showTax: false, showDiscount: true,
+  bankName: 'Deutsche Bank', iban: 'DE98 1213 6424 1111 3465 9752', bic: 'DBKEDFHH',
   paymentNote: 'Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer.',
   closingText: 'Wir bedanken uns für Ihren Auftrag.',
   footerText: 'Logo oHG | Musterstraße 21, 73728 Esslingen am Neckar | logo@mail.de | Tel.: 0737 281204',
@@ -521,157 +568,155 @@ const invoiceData = reactive<InvoiceData>({
 
 // ─── Drag & Drop ─────────────────────────────────────────────────────────────
 
-const dragIndex = ref<number | null>(null)
+const dragIndex     = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 
-function onDragStart(e: DragEvent, index: number) {
-  dragIndex.value = index
+function onDragStart(e: DragEvent, idx: number) {
+  dragIndex.value = idx
   if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
 }
-
-function onDragOver(e: DragEvent, index: number) {
-  dragOverIndex.value = index
-  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
-}
-
-function onDrop(e: DragEvent, toIndex: number) {
+function onDragOver(_e: DragEvent, idx: number) { dragOverIndex.value = idx }
+function onDrop(_e: DragEvent, toIdx: number) {
   const from = dragIndex.value
-  if (from === null || from === toIndex) return
-  const arr = [...sections.value]
-  const [moved] = arr.splice(from, 1)
-  arr.splice(toIndex, 0, moved)
-  sections.value = arr
-  dragIndex.value = null
-  dragOverIndex.value = null
+  if (from !== null && from !== toIdx) {
+    const arr = [...sections.value]
+    const [moved] = arr.splice(from, 1)
+    arr.splice(toIdx, 0, moved)
+    sections.value = arr
+  }
+  onDragEnd()
 }
+function onDragEnd() { dragIndex.value = null; dragOverIndex.value = null }
 
-function onDragEnd() {
-  dragIndex.value = null
-  dragOverIndex.value = null
-}
-
-// ─── Section Management ───────────────────────────────────────────────────────
+// ─── Section management ───────────────────────────────────────────────────────
 
 function toggleSection(id: string) {
   activeSection.value = activeSection.value === id ? null : id
 }
-
 function removeSection(id: string) {
   sections.value = sections.value.filter(s => s.id !== id)
   if (activeSection.value === id) activeSection.value = null
 }
-
 const availableSectionsToAdd = computed(() =>
   ALL_SECTION_TYPES.filter(t => !sections.value.some(s => s.type === t.type))
 )
-
 function addSection(type: string) {
   const tmpl = ALL_SECTION_TYPES.find(t => t.type === type)
   if (!tmpl) return
-  const newSection: Section = { id: makeId(), ...tmpl }
-  sections.value.push(newSection)
-  nextTick(() => { activeSection.value = newSection.id })
+  const s: SectionDef = { id: uid(), ...tmpl }
+  sections.value.push(s)
+  nextTick(() => { activeSection.value = s.id })
+}
+
+// ─── Logo Upload ──────────────────────────────────────────────────────────────
+
+function triggerLogoUpload() { logoInputRef.value?.click() }
+
+function readLogoFile(file: File) {
+  if (!file.type.startsWith('image/')) return
+  invoiceData.logoName = file.name
+  const reader = new FileReader()
+  reader.onload = ev => { invoiceData.logo = ev.target?.result as string }
+  reader.readAsDataURL(file)
+}
+function onLogoFileChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) readLogoFile(file)
+}
+function onLogoDrop(e: DragEvent) {
+  logoDragOver.value = false
+  const file = e.dataTransfer?.files?.[0]
+  if (file) readLogoFile(file)
 }
 
 // ─── Table Builder ────────────────────────────────────────────────────────────
 
 function addColumn() {
-  invoiceData.tableColumns.push({ label: 'Neue Spalte', align: 'left' })
-  invoiceData.tableRows.forEach(row => row.cells.push(''))
+  invoiceData.tableColumns.push({ label: 'Neu', align: 'left' })
+  invoiceData.tableRows.forEach(r => r.cells.push(''))
 }
-
 function removeColumn(ci: number) {
   invoiceData.tableColumns.splice(ci, 1)
-  invoiceData.tableRows.forEach(row => row.cells.splice(ci, 1))
+  invoiceData.tableRows.forEach(r => r.cells.splice(ci, 1))
 }
+function addRow()          { invoiceData.tableRows.push({ cells: invoiceData.tableColumns.map(() => '') }) }
+function removeRow(ri: number) { invoiceData.tableRows.splice(ri, 1) }
 
-function addRow() {
-  invoiceData.tableRows.push({ cells: invoiceData.tableColumns.map(() => '') })
-}
+// ─── Computed Totals ──────────────────────────────────────────────────────────
 
-function removeRow(ri: number) {
-  invoiceData.tableRows.splice(ri, 1)
-}
-
-// ─── Logo Upload ──────────────────────────────────────────────────────────────
-
-function triggerLogoUpload() {
-  logoInput.value?.click()
-}
-
-function onLogoUpload(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = ev => { invoiceData.logo = ev.target?.result as string }
-  reader.readAsDataURL(file)
-}
-
-// ─── Computeds (Totals) ───────────────────────────────────────────────────────
-
-const subtotal = computed(() => {
-  // Try to parse last column as currency values
-  return invoiceData.tableRows.reduce((sum, row) => {
-    const lastCell = row.cells[row.cells.length - 1] || ''
-    const num = parseFloat(lastCell.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0
-    return sum + num
+const subtotal = computed(() =>
+  invoiceData.tableRows.reduce((sum, row) => {
+    const raw = (row.cells[row.cells.length - 1] ?? '')
+      .replace(/[^\d,.-]/g, '').replace(',', '.')
+    return sum + (parseFloat(raw) || 0)
   }, 0)
-})
-
+)
 const discountAmount = computed(() => subtotal.value * (invoiceData.discountRate / 100))
-const afterDiscount = computed(() => subtotal.value - discountAmount.value)
-const taxAmount = computed(() => afterDiscount.value * (invoiceData.taxRate / 100))
-const total = computed(() => afterDiscount.value + (invoiceData.showTax ? taxAmount.value : 0))
+const afterDiscount  = computed(() => subtotal.value - discountAmount.value)
+const taxAmount      = computed(() => afterDiscount.value * (invoiceData.taxRate / 100))
+const grandTotal     = computed(() => afterDiscount.value + (invoiceData.showTax ? taxAmount.value : 0))
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return ''
-  const [y, m, d] = dateStr.split('-')
-  return `${d}.${m}.${y}`
+function formatDate(d: string): string {
+  if (!d) return ''
+  const [y, m, day] = d.split('-')
+  return `${day}.${m}.${y}`
 }
-
-function formatCurrency(val: number): string {
-  return val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€'
+function formatCurrency(n: number): string {
+  return n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€'
 }
 
 // ─── PDF Download ─────────────────────────────────────────────────────────────
 
 async function downloadPDF() {
-  // Uses browser print dialog with print-specific CSS to generate PDF
-  const printBtn = document.querySelector('.btn-download') as HTMLElement
-  if (printBtn) printBtn.textContent = 'Wird vorbereitet...'
-  
   await nextTick()
-  
-  // Add print class to only show invoice
   document.body.classList.add('printing')
   window.print()
   document.body.classList.remove('printing')
-  
-  if (printBtn) {
-    printBtn.innerHTML = '<span>↓</span> Als PDF herunterladen'
-  }
 }
 </script>
 
 <style scoped>
-/* ─── Layout ──────────────────────────────────────────────────────────────── */
-
-.creator-layout {
-  display: flex;
-  height: calc(100vh - 64px);
-  overflow: hidden;
-  background: #f4f4f2;
-  font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+/* ─── Fonts ──────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Aspekta';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('../Aspekta/Aspekta-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Aspekta';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('../Aspekta/Aspekta-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Aspekta';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('../Aspekta/Aspekta-700.woff2') format('woff2');
 }
 
-/* ─── Editor Panel ─────────────────────────────────────────────────────────── */
+/* ─── Root layout ────────────────────────────────────────────────────────── */
+.creator-layout {
+  display: flex;
+  height: calc(100vh - 64px);   /* subtract your navbar height */
+  overflow: hidden;
+  background: #f4f4f2;
+  font-family: 'Aspekta', 'Helvetica Neue', sans-serif;
+  position: relative;
+}
 
+/* ═══════════════════════════════════════════════════════
+   EDITOR PANEL  (left 50%)
+══════════════════════════════════════════════════════ */
 .editor-panel {
-  width: 420px;
-  min-width: 320px;
-  max-width: 480px;
+  width: 50%;
+  min-width: 300px;
   background: #fff;
   border-right: 1px solid #e8e8e4;
   display: flex;
@@ -682,111 +727,82 @@ async function downloadPDF() {
 .editor-header {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  padding: 24px 24px 16px;
+  gap: 10px;
+  padding: 24px 20px 14px;
   border-bottom: 1px solid #f0f0ec;
   flex-shrink: 0;
 }
 
 .editor-title {
   font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
   color: #111;
   margin: 0;
 }
 
 .section-count {
   font-size: 12px;
-  color: #999;
-  font-weight: 400;
+  color: #bbb;
 }
 
 .sections-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
 }
-
-.sections-list::-webkit-scrollbar { width: 4px; }
-.sections-list::-webkit-scrollbar-track { background: transparent; }
+.sections-list::-webkit-scrollbar       { width: 4px; }
 .sections-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 
-/* ─── Section Card ─────────────────────────────────────────────────────────── */
-
+/* ── Section card ─────────────────────────────────────────────────────────── */
 .section-card {
   background: #fafaf8;
   border: 1px solid #e8e8e4;
   border-radius: 10px;
   overflow: hidden;
-  cursor: default;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.14s, box-shadow 0.14s, opacity 0.14s;
 }
-
-.section-card:hover {
-  border-color: #d0d0cc;
-}
-
-.section-card--active {
-  border-color: #111;
-  box-shadow: 0 0 0 1px #111;
-}
+.section-card:hover              { border-color: #ccc; }
+.section-card--active            { border-color: #111; box-shadow: 0 0 0 1px #111; }
+.section-card--dragging          { opacity: 0.45; }
+.section-card--dragover          { border-color: #1a56db; box-shadow: 0 0 0 2px rgba(26,86,219,.22); }
 
 .section-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 11px 13px;
   cursor: pointer;
   user-select: none;
 }
 
-.section-card__left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-card__right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.section-card__left  { display: flex; align-items: center; gap: 9px; }
+.section-card__right { display: flex; align-items: center; gap: 6px; }
 
 .drag-handle {
-  color: #bbb;
+  color: #ccc;
+  font-size: 15px;
   cursor: grab;
-  font-size: 16px;
   line-height: 1;
 }
-
 .drag-handle:active { cursor: grabbing; }
 
-.section-icon {
-  font-size: 14px;
-}
-
-.section-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #222;
-}
+.section-name { font-size: 13px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.1px; }
 
 .chevron {
-  font-size: 16px;
-  color: #999;
-  transform: rotate(0deg);
-  transition: transform 0.2s;
-  line-height: 1;
+  font-size: 17px;
+  color: #aaa;
   display: inline-block;
+  transform: rotate(0deg);
+  transition: transform 0.2s ease;
+  line-height: 1;
 }
-
-.chevron--open {
-  transform: rotate(90deg);
-}
+.chevron--open { transform: rotate(90deg); }
 
 .btn-icon {
   background: none;
@@ -795,42 +811,26 @@ async function downloadPDF() {
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
-  color: #aaa;
-  transition: color 0.15s, background 0.15s;
+  color: #ccc;
+  transition: color 0.12s, background 0.12s;
+  line-height: 1.4;
 }
-
-.btn-icon--danger:hover {
-  color: #e53e3e;
-  background: #fff5f5;
-}
+.btn-icon--danger:hover { color: #e53e3e; background: #fff5f5; }
 
 .section-card__body {
-  padding: 4px 14px 16px;
+  padding: 4px 13px 16px;
   border-top: 1px solid #f0f0ec;
 }
 
-/* ─── Slide transition ─────────────────────────────────────────────────────── */
-
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.2s ease;
+/* ── Slide transition ─────────────────────────────────────────────────────── */
+.slide-enter-active, .slide-leave-active {
+  transition: max-height 0.22s ease, opacity 0.18s ease;
   overflow: hidden;
 }
+.slide-enter-from, .slide-leave-to   { max-height: 0;      opacity: 0; }
+.slide-enter-to,   .slide-leave-from { max-height: 2400px; opacity: 1; }
 
-.slide-enter-from,
-.slide-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
-
-.slide-enter-to,
-.slide-leave-from {
-  max-height: 600px;
-  opacity: 1;
-}
-
-/* ─── Form Fields ──────────────────────────────────────────────────────────── */
-
+/* ── Form fields ──────────────────────────────────────────────────────────── */
 .field-group {
   display: flex;
   flex-direction: column;
@@ -838,227 +838,215 @@ async function downloadPDF() {
   margin-top: 10px;
 }
 
-.field-group label {
+.field-group > label {
   font-size: 11px;
-  font-weight: 500;
-  color: #888;
+  font-weight: 600;
+  color: #999;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-.field-row {
-  display: flex;
-  gap: 10px;
-}
-
-.field-row .field-group {
-  flex: 1;
-}
+.field-row { display: flex; gap: 10px; }
+.field-row .field-group { flex: 1; min-width: 0; }
 
 input[type="text"],
 input[type="date"],
 input[type="number"],
 textarea,
 select {
-  border: 1px solid #e0e0dc;
+  border: 1px solid #e2e2de;
   border-radius: 6px;
   padding: 7px 10px;
   font-size: 13px;
   font-family: inherit;
-  color: #222;
+  color: #1a1a1a;
   background: #fff;
   width: 100%;
   box-sizing: border-box;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.14s, box-shadow 0.14s;
 }
-
-input:focus,
-textarea:focus,
-select:focus {
+input:focus, textarea:focus, select:focus {
   border-color: #111;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.055);
 }
+textarea { resize: vertical; min-height: 64px; }
 
-textarea {
-  resize: vertical;
-  min-height: 60px;
+.btn-add-entry {
+  margin-top: 9px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #888;
+  background: none;
+  border: 1px dashed #d8d8d4;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.14s;
 }
+.btn-add-entry:hover { border-color: #111; color: #111; }
 
-/* ─── Logo Upload ──────────────────────────────────────────────────────────── */
-
+/* ── Logo upload ──────────────────────────────────────────────────────────── */
 .logo-upload {
   border: 1.5px dashed #ddd;
   border-radius: 8px;
-  padding: 16px;
+  padding: 13px 16px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 12.5px;
   color: #888;
-  transition: border-color 0.15s, background 0.15s;
-  min-height: 56px;
+  min-height: 50px;
+  transition: border-color 0.14s, background 0.14s;
 }
-
-.logo-upload:hover {
+.logo-upload:hover,
+.logo-upload--dragover {
   border-color: #111;
-  background: #fafaf8;
+  background: #f9f9f7;
 }
-
-.logo-upload__icon {
-  font-size: 18px;
+.logo-upload--has-file {
+  border-style: solid;
+  border-color: #e0e0dc;
+  cursor: default;
 }
-
-.logo-preview {
-  max-height: 44px;
-  max-width: 160px;
-  object-fit: contain;
-}
-
-.logo-filename {
-  font-size: 11px;
-  color: #e53e3e;
-  cursor: pointer;
-  margin-top: 4px;
-}
-
-/* ─── Table Builder ────────────────────────────────────────────────────────── */
-
-.table-builder {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.table-builder__columns label,
-.table-rows-editor label,
-.totals-config label {
-  font-size: 11px;
-  font-weight: 500;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.column-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-}
-
-.column-tag {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: #f4f4f2;
-  border: 1px solid #e0e0dc;
-  border-radius: 6px;
-  padding: 3px 6px;
-}
-
-.column-tag__input {
-  border: none;
-  background: transparent;
-  padding: 2px 4px;
-  width: 90px;
+.logo-upload__arrow  { font-size: 18px; flex-shrink: 0; }
+.logo-upload__label  { display: flex; align-items: center; flex-wrap: wrap; gap: 3px; }
+.logo-upload__hint   { color: #bbb; }
+.logo-upload__btn {
+  background: #f0f0ec;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 3px 10px;
   font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s;
   color: #333;
 }
+.logo-upload__btn:hover { background: #e4e4e0; }
 
-.column-tag__input:focus {
-  border-color: transparent;
-  outline: none;
+.logo-preview {
+  max-height: 40px;
+  max-width: 180px;
+  object-fit: contain;
+  display: block;
 }
 
-.column-tag__align {
-  border: none;
-  background: transparent;
+.logo-remove {
+  margin-top: 5px;
   font-size: 11px;
-  padding: 0 2px;
-  color: #888;
-  cursor: pointer;
-}
-
-.column-tag__remove {
+  color: #e53e3e;
   background: none;
   border: none;
-  color: #bbb;
   cursor: pointer;
-  font-size: 10px;
-  padding: 0 2px;
+  padding: 0;
+  font-family: inherit;
+}
+.logo-remove:hover { opacity: 0.72; }
+
+/* ── Table builder ────────────────────────────────────────────────────────── */
+.table-section-group { margin-top: 14px; }
+
+.table-section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 7px;
 }
 
-.column-tag__remove:hover { color: #e53e3e; }
+.column-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px; }
+
+.column-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #f4f4f2;
+  border: 1px solid #e4e4e0;
+  border-radius: 7px;
+  padding: 4px 8px;
+}
+
+.column-name-input {
+  flex: 1;
+  border: none !important;
+  background: transparent;
+  padding: 4px 4px;
+  font-size: 12.5px;
+  box-shadow: none !important;
+  width: auto;
+}
+.column-name-input:focus { border: none; box-shadow: none; outline: none; }
+
+.column-align-select {
+  width: auto;
+  border: none !important;
+  background: transparent;
+  font-size: 11px;
+  color: #888;
+  cursor: pointer;
+  padding: 2px 3px;
+  box-shadow: none !important;
+}
+.column-align-select:focus { box-shadow: none; border: none; }
 
 .btn-add-col {
   font-size: 12px;
   color: #666;
-  background: #f4f4f2;
-  border: 1.5px dashed #ddd;
+  background: none;
+  border: 1.5px dashed #d8d8d4;
   border-radius: 6px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   cursor: pointer;
-  transition: all 0.15s;
+  font-family: inherit;
+  transition: all 0.14s;
+  display: inline-flex;
+  align-items: center;
 }
-
 .btn-add-col:hover { border-color: #111; color: #111; }
 
-.table-row-editor {
+.row-editor {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 6px;
   padding: 6px 0;
   border-bottom: 1px solid #f0f0ec;
 }
-
 .row-num {
-  font-size: 11px;
-  color: #bbb;
-  min-width: 20px;
+  font-size: 10.5px;
+  color: #ccc;
+  min-width: 17px;
+  margin-top: 8px;
   text-align: center;
+  flex-shrink: 0;
 }
-
-.row-cells {
-  display: flex;
-  flex: 1;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.row-cell-input {
-  flex: 1;
-  min-width: 60px;
-  font-size: 12px;
-  padding: 5px 7px;
-}
+.row-cells { display: flex; flex: 1; gap: 4px; flex-wrap: wrap; }
+.row-cell-input { flex: 1; min-width: 68px; font-size: 12px; padding: 5px 7px; }
 
 .btn-add-row {
-  margin-top: 8px;
+  margin-top: 7px;
   width: 100%;
   padding: 8px;
   background: none;
-  border: 1.5px dashed #ddd;
+  border: 1.5px dashed #d8d8d4;
   border-radius: 6px;
   font-size: 12px;
+  font-family: inherit;
   color: #888;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.14s;
 }
-
 .btn-add-row:hover { border-color: #111; color: #111; }
 
-.totals-config { }
-
-.toggle-row {
+.toggle-grid {
   display: flex;
-  gap: 16px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 10px;
 }
-
 .toggle-label {
   display: flex;
   align-items: center;
@@ -1066,36 +1054,34 @@ textarea {
   font-size: 12px;
   color: #555;
   cursor: pointer;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
 }
-
 .toggle-label input[type="checkbox"] {
   width: auto;
+  border: none;
+  padding: 0;
+  box-shadow: none;
   cursor: pointer;
+  accent-color: #111;
 }
 
-/* ─── Add Section ──────────────────────────────────────────────────────────── */
-
+/* ── Add section footer ───────────────────────────────────────────────────── */
 .add-section-area {
-  padding: 12px 16px 20px;
+  padding: 10px 12px 18px;
   border-top: 1px solid #f0f0ec;
   flex-shrink: 0;
 }
-
 .add-section-label {
   font-size: 11px;
-  font-weight: 500;
-  color: #aaa;
+  font-weight: 600;
+  color: #bbb;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 0 8px;
+  letter-spacing: 0.4px;
+  margin: 0 0 7px;
 }
-
-.add-section-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
+.add-section-buttons { display: flex; flex-wrap: wrap; gap: 5px; }
 .btn-add-section {
   display: flex;
   align-items: center;
@@ -1105,19 +1091,16 @@ textarea {
   border: 1px solid #e4e4e0;
   border-radius: 6px;
   font-size: 12px;
+  font-family: inherit;
   color: #555;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.14s;
 }
+.btn-add-section:hover { background: #111; color: #fff; border-color: #111; }
 
-.btn-add-section:hover {
-  background: #111;
-  color: #fff;
-  border-color: #111;
-}
-
-/* ─── Preview Panel ────────────────────────────────────────────────────────── */
-
+/* ═══════════════════════════════════════════════════════
+   PREVIEW PANEL  (right 50%)
+══════════════════════════════════════════════════════ */
 .preview-panel {
   flex: 1;
   display: flex;
@@ -1130,72 +1113,84 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 28px 16px;
+  padding: 24px 24px 14px;
   flex-shrink: 0;
 }
 
-.preview-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.preview-actions { display: flex; align-items: center; gap: 10px; }
 
 .template-select {
   width: auto;
   font-size: 13px;
-  padding: 7px 12px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 7px;
   cursor: pointer;
+  font-family: inherit;
 }
-
-.btn-download {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  background: #1a56db;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-}
-
-.btn-download:hover { background: #1447b8; }
-.btn-download:active { transform: scale(0.97); }
 
 .preview-wrapper {
   flex: 1;
   overflow-y: auto;
-  padding: 0 28px 28px;
+  padding: 0 24px 96px;
   display: flex;
   justify-content: center;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
 }
-
-.preview-wrapper::-webkit-scrollbar { width: 4px; }
-.preview-wrapper::-webkit-scrollbar-track { background: transparent; }
+.preview-wrapper::-webkit-scrollbar       { width: 4px; }
 .preview-wrapper::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
 
-.preview-scale-container {
-  width: 100%;
-  max-width: 680px;
+.preview-scale-container { width: 100%; max-width: 680px; }
+
+/* ── Download bar ─────────────────────────────────────────────────────────── */
+.download-bar {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 50%;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: stretch;
+  background: linear-gradient(to top, #f4f4f2 70%, transparent);
+  pointer-events: none;
 }
 
-/* ─── Invoice Preview ──────────────────────────────────────────────────────── */
+.btn-download {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #1a56db;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: all;
+  box-shadow: 0 2px 14px rgba(26, 86, 219, 0.32);
+  transition: background 0.14s, transform 0.1s, box-shadow 0.14s;
+  letter-spacing: -0.1px;
+}
+.btn-download:hover  { background: #1447b8; box-shadow: 0 4px 18px rgba(26, 86, 219, 0.42); }
+.btn-download:active { transform: scale(0.97); }
 
+/* ═══════════════════════════════════════════════════════
+   INVOICE PREVIEW — A4 sheet
+══════════════════════════════════════════════════════ */
 .invoice-preview {
   background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-  padding: 52px 56px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  border-radius: 3px;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.09);
+  padding: 52px 56px 64px;
+  font-family: 'Aspekta', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px;
   color: #222;
-  line-height: 1.5;
+  line-height: 1.55;
   min-height: 900px;
-  position: relative;
 }
 
 /* Header */
@@ -1205,106 +1200,57 @@ textarea {
   align-items: flex-start;
   margin-bottom: 32px;
 }
-
-.inv-header__logo {
-  display: flex;
-  align-items: center;
-}
-
-.inv-logo-placeholder {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+.inv-logo-placeholder { display: flex; align-items: center; gap: 8px; }
 .inv-logo-dot {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   background: #1a56db;
   border-radius: 50%;
-  display: inline-block;
+  flex-shrink: 0;
 }
-
-.inv-logo-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #111;
-}
-
-.inv-logo-img {
-  max-height: 40px;
-  max-width: 120px;
-  object-fit: contain;
-}
+.inv-logo-wordmark { font-size: 14px; font-weight: 700; color: #111; letter-spacing: -0.3px; }
+.inv-logo-img      { max-height: 44px; max-width: 140px; object-fit: contain; display: block; }
 
 .inv-header__company {
   display: flex;
   flex-direction: column;
   text-align: right;
   font-size: 10.5px;
-  color: #555;
-  line-height: 1.6;
+  color: #666;
+  line-height: 1.65;
+  gap: 1px;
 }
+.inv-header__company strong { color: #111; font-weight: 700; font-size: 11px; }
 
-.inv-header__company strong {
-  color: #111;
-  font-weight: 600;
-  font-size: 11px;
-}
-
-/* Addresses */
-.inv-addresses {
-  margin-bottom: 20px;
-}
-
-.inv-from {
-  font-size: 10.5px;
-  color: #444;
-  line-height: 1.6;
-}
+/* Customer */
+.inv-customer { font-size: 10.5px; color: #444; line-height: 1.7; margin-bottom: 20px; }
+.inv-customer p { margin: 0; }
 
 /* Meta */
-.inv-meta {
-  margin-bottom: 28px;
-}
-
-.inv-meta__left {
+.inv-meta { margin-bottom: 26px; }
+.inv-meta__grid {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 1px 12px;
-  font-size: 10.5px;
-  color: #555;
-  margin-bottom: 16px;
-}
-
-.inv-meta__left p {
-  display: contents;
-  margin: 0;
-}
-
-.inv-meta__left span {
-  color: #888;
-  font-size: 10px;
-}
-
-.inv-intro {
-  margin-top: 16px;
+  column-gap: 14px;
+  row-gap: 1px;
   font-size: 10.5px;
   color: #444;
 }
+.inv-meta__key { color: #aaa; font-size: 10px; white-space: nowrap; }
 
-.inv-title {
-  font-size: 20px !important;
+/* Greeting */
+.inv-greeting { margin-bottom: 22px; font-size: 10.5px; color: #444; }
+.inv-greeting__title {
+  font-size: 20px;
   font-weight: 700;
-  color: #111 !important;
-  margin-bottom: 8px !important;
+  color: #111;
+  margin: 0 0 8px;
   letter-spacing: -0.5px;
 }
+.inv-greeting__body { margin: 0; line-height: 1.6; }
 
-/* Table */
-.inv-table-section {
-  margin-bottom: 28px;
-}
+/* ── Invoice table ────────────────────────────────────────────────────────── */
+.inv-table-section { margin-bottom: 20px; }
 
 .inv-table {
   width: 100%;
@@ -1312,193 +1258,134 @@ textarea {
   font-size: 10px;
 }
 
-.inv-table thead tr {
-  background: #f0f0ec;
-}
+/* CLASSIC (default) */
+.inv-table thead tr { background: #f0f0ec; }
 
 .inv-table thead th {
-  padding: 7px 8px;
-  font-weight: 600;
-  font-size: 9.5px;
+  padding: 8px 9px;
+  font-weight: 700;
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: #555;
+  letter-spacing: 0.4px;
+  color: #666;
   border: none;
 }
 
-.inv-table tbody tr {
-  border-bottom: 1px solid #f4f4f2;
-}
+.inv-table tbody tr  { border-bottom: 1px solid #f4f4f2; }
+.inv-tr--alt         { background: #fafaf8; }
 
 .inv-table tbody td {
-  padding: 8px 8px;
+  padding: 8px 9px;
   color: #333;
   vertical-align: top;
 }
 
 /* Totals */
 .inv-totals {
-  margin-top: 2px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  margin-top: 4px;
+  gap: 1px;
 }
 
 .inv-totals__row {
   display: flex;
-  justify-content: flex-end;
-  gap: 32px;
-  padding: 5px 8px;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 5px 9px;
   font-size: 10px;
-  color: #555;
+  color: #666;
   width: 280px;
 }
 
-.inv-totals__row--sub {
-  background: #f4f4f2;
-  font-weight: 500;
-}
+.inv-totals__row--discount { color: #e53e3e; }
+.inv-totals__row--tax      { color: #555; }
 
-.inv-totals__row--discount {
-  color: #e53e3e;
-}
-
-.inv-totals__row--total {
+.inv-totals__row--grand {
   background: #f0f0ec;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 11.5px;
   color: #111;
+  margin-top: 3px;
 }
 
 /* Banking */
 .inv-banking {
   display: flex;
   justify-content: space-between;
-  padding-top: 28px;
+  gap: 24px;
   margin-top: 28px;
+  padding-top: 24px;
   border-top: 1px solid #e8e8e4;
   font-size: 10px;
   color: #555;
-  line-height: 1.7;
+  line-height: 1.8;
 }
+.inv-banking__col p { margin: 0; }
+.inv-banking__col--right { text-align: right; }
 
 /* Footer */
-.inv-footer {
-  margin-top: 24px;
-  font-size: 10px;
-  color: #555;
-}
-
-.inv-payment-note {
-  margin-bottom: 8px;
-}
-
-.inv-closing {
-  text-align: center;
-  margin: 20px 0;
-  color: #555;
-}
-
-.inv-footer-bar {
+.inv-footer { margin-top: 22px; font-size: 10px; color: #666; }
+.inv-footer__payment { margin-bottom: 8px; }
+.inv-footer__closing { text-align: center; margin: 20px 0; }
+.inv-footer__bar {
   border-top: 1px solid #e8e8e4;
   padding-top: 10px;
   text-align: center;
-  color: #999;
+  color: #aaa;
   font-size: 9px;
   margin-top: 20px;
 }
 
-/* ─── Template Variants ─────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   TEMPLATE VARIANTS
+══════════════════════════════════════════════════════ */
 
-.template--modern .inv-table thead tr {
-  background: #111;
-}
+/* Modern */
+.template--modern .inv-table thead tr { background: #111; }
+.template--modern .inv-table thead th { color: #e0e0dc; }
+.template--modern .inv-tr--alt        { background: #f9f9f7; }
+.template--modern .inv-totals__row--grand { background: #111; color: #fff; }
+.template--modern .inv-logo-dot       { border-radius: 3px; background: #111; }
 
-.template--modern .inv-table thead th {
-  color: #fff;
-}
+/* Minimal */
+.template--minimal .inv-header        { border-bottom: 2px solid #111; padding-bottom: 16px; }
+.template--minimal .inv-table thead tr { background: transparent; }
+.template--minimal .inv-table thead th { color: #111; border-bottom: 2px solid #111; }
+.template--minimal .inv-tr--alt       { background: transparent; }
+.template--minimal .inv-table tbody tr { border-bottom: 1px solid #e4e4e0; }
+.template--minimal .inv-totals__row--grand { background: transparent; border-top: 2px solid #111; }
+.template--minimal .inv-logo-dot      { background: #111; }
 
-.template--modern .inv-totals__row--total {
-  background: #111;
-  color: #fff;
-}
-
-.template--modern .inv-logo-dot {
-  border-radius: 2px;
-  background: #111;
-}
-
-.template--minimal .inv-header {
-  border-bottom: 2px solid #111;
-  padding-bottom: 16px;
-}
-
-.template--minimal .inv-table thead tr {
-  background: transparent;
-  border-bottom: 2px solid #111;
-}
-
-.template--minimal .inv-table thead th {
-  color: #111;
-  background: transparent;
-}
-
-.template--minimal .inv-totals__row--total {
-  background: transparent;
-  border-top: 2px solid #111;
-}
-
-.template--minimal .inv-logo-dot {
-  background: #111;
-}
-
-/* ─── Responsive ─────────────────────────────────────────────────────────────── */
-
-@media (max-width: 900px) {
-  .creator-layout {
-    flex-direction: column;
-    height: auto;
-    overflow: auto;
-  }
-
-  .editor-panel {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-
-  .sections-list {
-    overflow: visible;
-  }
-
-  .preview-panel {
-    height: auto;
-    overflow: visible;
-  }
-
-  .preview-wrapper {
-    overflow: visible;
-    padding: 0 16px 28px;
-  }
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .creator-layout  { flex-direction: column; height: auto; overflow: auto; }
+  .editor-panel    { width: 100%; height: auto; overflow: visible; }
+  .sections-list   { overflow: visible; }
+  .preview-panel   { height: auto; overflow: visible; }
+  .preview-wrapper { overflow: visible; padding: 0 16px 80px; }
+  .download-bar    { width: 100%; position: sticky; bottom: 0; }
 }
 
 @media (max-width: 600px) {
-  .invoice-preview {
-    padding: 28px 24px;
-  }
-
-  .field-row {
-    flex-direction: column;
-  }
-
-  .preview-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
+  .invoice-preview  { padding: 28px 24px; }
+  .field-row        { flex-direction: column; }
+  .preview-header   { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .toggle-grid      { flex-direction: column; gap: 8px; }
 }
 
-/* ─── Print Styles ─────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   PRINT
+══════════════════════════════════════════════════════ */
+@media print {
+  .editor-panel, .preview-header, .download-bar { display: none !important; }
+  .creator-layout   { display: block; }
+  .preview-panel    { background: white; }
+  .preview-wrapper  { overflow: visible; padding: 0; }
+  .preview-scale-container { max-width: 100%; }
+  .invoice-preview  { box-shadow: none; padding: 0; min-height: 0; }
+}
 </style>
