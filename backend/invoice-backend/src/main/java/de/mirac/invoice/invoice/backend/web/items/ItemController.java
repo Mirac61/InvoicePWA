@@ -1,6 +1,9 @@
-package de.mirac.invoice.invoice.backend.domain.items;
+package de.mirac.invoice.invoice.backend.web.items;
 
+import de.mirac.invoice.invoice.backend.domain.items.Item;
 import de.mirac.invoice.invoice.backend.domain.items.ItemService;
+import de.mirac.invoice.invoice.backend.web.items.dto.CreateItemRequest;
+import de.mirac.invoice.invoice.backend.web.items.dto.ItemResponse;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,40 +42,5 @@ public class ItemController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         itemService.deleteById(id);
-    }
-
-    public record CreateItemRequest(
-        String name,
-        String description,
-        String defaultUnit,
-        Double defaultTaxRate,
-        Double unitPriceNet,
-        Boolean active
-    ) {}
-
-    public record ItemResponse(
-        String id,
-        String name,
-        String description,
-        String defaultUnit,
-        Double defaultTaxRate,
-        Double unitPriceNet,
-        Boolean active,
-        String createdAt,
-        String updatedAt
-    ) {
-        static ItemResponse from(Item i) {
-            return new ItemResponse(
-                i.getId(),
-                i.getName(),
-                i.getDescription(),
-                i.getDefaultUnit(),
-                i.getDefaultTaxRate(),
-                i.getUnitPriceNet(),
-                i.getActive(),
-                i.getCreatedAt(),
-                i.getUpdatedAt()
-            );
-        }
     }
 }
