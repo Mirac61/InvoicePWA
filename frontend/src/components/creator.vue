@@ -678,28 +678,6 @@ async function downloadPDF() {
 </script>
 
 <style scoped>
-/* ─── Fonts ──────────────────────────────────────────────────────────────── */
-@font-face {
-  font-family: 'Aspekta';
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  src: url('../Aspekta/Aspekta-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Aspekta';
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-  src: url('../Aspekta/Aspekta-600.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Aspekta';
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-  src: url('../Aspekta/Aspekta-700.woff2') format('woff2');
-}
 
 /* ─── Root layout ────────────────────────────────────────────────────────── */
 .creator-layout {
