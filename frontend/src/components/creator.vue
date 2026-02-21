@@ -538,6 +538,8 @@ const sections = ref<SectionDef[]>([
   { id: uid(), type: 'footer',   label: 'Abschluss',      icon: '' },
 ])
 
+
+
 const invoiceData = reactive<InvoiceData>({
   logo: '', logoName: '',
   companyName: 'Logo oHG', companyStreet: 'Musterstraße 21', companyCity: '73728 Esslingen am Neckar',
@@ -565,6 +567,9 @@ const invoiceData = reactive<InvoiceData>({
   closingText: 'Wir bedanken uns für Ihren Auftrag.',
   footerText: 'Logo oHG | Musterstraße 21, 73728 Esslingen am Neckar | logo@mail.de | Tel.: 0737 281204',
 })
+
+const saved = localStorage.getItem('invar_doc_settings');
+if (saved) Object.assign(invoiceData, JSON.parse(saved))
 
 // ─── Drag & Drop ─────────────────────────────────────────────────────────────
 
