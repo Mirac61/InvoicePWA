@@ -539,7 +539,7 @@ const sections = ref<SectionDef[]>([
 ])
 
 
-
+// Example data for preview and testing
 const invoiceData = reactive<InvoiceData>({
   logo: '', logoName: '',
   companyName: 'Logo oHG', companyStreet: 'Musterstraße 21', companyCity: '73728 Esslingen am Neckar',
@@ -676,9 +676,54 @@ function formatCurrency(n: number): string {
 
 async function downloadPDF() {
   await nextTick()
-  document.body.classList.add('printing')
-  window.print()
-  document.body.classList.remove('printing')
+
+  const el = document.getElementById('invoice-preview')
+  if (!el) return
+
+  // Collect all styles from the current page
+  const styles = Array.from(document.styleSheets)
+    .map(sheet => {
+      try {
+        return Array.from(sheet.cssRules).map(r => r.cssText).join('\n')
+      } catch { return '' }
+    })
+    .join('\n')
+
+  const win = window.open('', '_blank', 'width=900,height=1200')
+  if (!win) return
+
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+          ${styles}
+          body { margin: 0; background: white; }
+          @page { margin: 15mm;  size: A4; }
+        </style>
+      </head>
+      <body>${el.outerHTML}</body>
+    </html>
+  `)
+
+  win.document.close()
+  win.focus()
+
+  // Wait for fonts/images to load before printing
+  win.onload = () => {
+    win.print()
+    win.close()
+  }
+
+  // Fallback if onload already fired
+  setTimeout(() => {
+    if (!win.closed) {
+      win.print()
+      win.close()
+    }
+  }, 500)
 }
 </script>
 
@@ -1128,7 +1173,7 @@ textarea { resize: vertical; min-height: 64px; }
 /* ── Download bar ─────────────────────────────────────────────────────────── */
 .download-bar {
   position: absolute;
-  bottom: 0;
+  bottom: 10%;
   right: 0;
   width: 50%;
   padding: 14px 24px;

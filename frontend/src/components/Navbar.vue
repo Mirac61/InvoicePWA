@@ -38,21 +38,23 @@ const currentComponent = computed(() => {
     display: flex;
     align-items: center;
     padding: 1rem 2rem;
-    background-color: var(--secondary-accent-color);
+    background-color: var(--navbar-background-color);
     align-items: center;
 }
 
-.navbar__links {
+.navbar__links{
     list-style: none;
     display: flex;
     gap: 2rem;
     justify-content: center;
     margin-inline: auto;
-    color: var(--primary-background-color);
+    color: var(--navbar-color);
+    cursor: pointer;
 }
+
 
 a{
     text-decoration: none;
-    color: var(--primary-background-color);
+    color: var(--navbar-color);
 }
 </style>
