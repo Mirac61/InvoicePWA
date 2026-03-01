@@ -1,777 +1,702 @@
 <template>
-  <div class="settings-page">
-    <header class="header">
-      <h1>Settings</h1>
-      <p class="subtitle">
-        Start with defaults. Switch to company settings when you need it.
-      </p>
-    </header>
+  <div class="settings-layout">
 
-    <section class="panel">
-      <div class="mode">
+    <!-- ── Sidebar ─────────────────────────────────────────────── -->
+    <aside class="settings-sidebar">
+      <h1 class="settings-sidebar__title">Einstellungen</h1>
+      <nav class="settings-nav">
         <button
-          class="mode-card"
-          :class="{ active: mode === 'defaults' }"
-          type="button"
-          @click="switchMode('defaults')"
+          v-for="tab in tabs"
+          :key="tab.id"
+          class="settings-nav__item"
+          :class="{ 'settings-nav__item--active': activeTab === tab.id }"
+          @click="activeTab = tab.id"
         >
-          <div class="mode-title">Standard settings</div>
-          <div class="mode-sub">Quick defaults for invoices.</div>
+          {{ tab.label }}
         </button>
+      </nav>
+    </aside>
 
-        <button
-          class="mode-card"
-          :class="{ active: mode === 'company' }"
-          type="button"
-          @click="switchMode('company')"
-        >
-          <div class="mode-title">Company settings</div>
-          <div class="mode-sub">Your business data and invoice defaults.</div>
-        </button>
-      </div>
+    <!-- ── Content ─────────────────────────────────────────────── -->
+    <main class="settings-content">
 
-      <div class="divider"></div>
-
-      <section v-if="mode === 'defaults'" class="content">
-        <div class="head">
-          <h2>Standard settings</h2>
-          <p class="hint">
-            These values are used until you switch to company settings.
-          </p>
+      <!-- ════════════════════════════════════
+           TAB: Dokumenteinstellungen
+      ════════════════════════════════════ -->
+      <section v-if="activeTab === 'document'" class="settings-section">
+        <div class="section-header">
+          <h2 class="section-title">Dokumenteinstellungen</h2>
+          <p class="section-desc">Diese Daten werden automatisch als Standardwerte im Creator vorausgefüllt.</p>
         </div>
 
-        <form class="form" @submit.prevent>
-          <div class="grid grid-2">
-            <div class="field">
-              <label for="d_invoicePrefix">Invoice prefix</label>
-              <input
-                id="d_invoicePrefix"
-                v-model.trim="defaults.invoicePrefix"
-                type="text"
-                disabled
-              />
-            </div>
+        <div class="settings-card">
 
-            <div class="field">
-              <label for="d_nextInvoiceNo">Next invoice number</label>
-              <input
-                id="d_nextInvoiceNo"
-                v-model.number="defaults.nextInvoiceNo"
-                type="number"
-                disabled
-              />
-            </div>
-
-            <div class="field">
-              <label for="d_paymentDays">Payment days</label>
-              <input
-                id="d_paymentDays"
-                v-model.number="defaults.paymentDays"
-                type="number"
-                disabled
-              />
-            </div>
-
-            <div class="field">
-              <label for="d_defaultVatRate">Default VAT rate</label>
-              <input
-                id="d_defaultVatRate"
-                v-model.number="defaults.defaultVatRate"
-                type="number"
-                step="0.01"
-                disabled
-              />
-              <small class="small">0.19 means 19%.</small>
+          <!-- Company block -->
+          <div class="card-block">
+            <h3 class="card-block__title">Unternehmen</h3>
+            <div class="field-grid">
+              <div class="field-group field-group--full">
+                <label>Firmenname</label>
+                <input v-model="doc.companyName" type="text" placeholder="Muster GmbH" />
+              </div>
+              <div class="field-group">
+                <label>Straße & Nr.</label>
+                <input v-model="doc.companyStreet" type="text" placeholder="Musterstraße 21" />
+              </div>
+              <div class="field-group">
+                <label>PLZ & Stadt</label>
+                <input v-model="doc.companyCity" type="text" placeholder="73728 Esslingen" />
+              </div>
+              <div class="field-group">
+                <label>USt-IdNr.</label>
+                <input v-model="doc.taxId" type="text" placeholder="DE123456789" />
+              </div>
+              <div class="field-group">
+                <label>Ansprechpartner</label>
+                <input v-model="doc.contact" type="text" placeholder="Anna Musterfrau" />
+              </div>
             </div>
           </div>
 
-          <div class="field">
-            <label for="d_invoiceFooter">Invoice footer</label>
-            <textarea
-              id="d_invoiceFooter"
-              v-model.trim="defaults.invoiceFooter"
-              rows="3"
-              disabled
-            />
-          </div>
-        </form>
-      </section>
+          <div class="card-divider" />
 
-      <section v-else class="content">
-        <div class="head head-split">
-          <div>
-            <h2>Company settings</h2>
-            <p class="hint">
-              Fill in your business details for legal invoices.
-            </p>
+          <!-- Bank block -->
+          <div class="card-block">
+            <h3 class="card-block__title">Bankverbindung</h3>
+            <div class="field-grid">
+              <div class="field-group field-group--full">
+                <label>Bank</label>
+                <input v-model="doc.bankName" type="text" placeholder="Deutsche Bank" />
+              </div>
+              <div class="field-group">
+                <label>IBAN</label>
+                <input v-model="doc.iban" type="text" placeholder="DE98 1213 6424 1111 3465 9752" />
+              </div>
+              <div class="field-group">
+                <label>BIC</label>
+                <input v-model="doc.bic" type="text" placeholder="DBKEDFHH" />
+              </div>
+            </div>
           </div>
 
-          <div class="actions">
+          <div class="card-divider" />
+
+          <!-- Invoice defaults block -->
+          <div class="card-block">
+            <h3 class="card-block__title">Rechnungsstandards</h3>
+            <div class="field-grid">
+              <div class="field-group">
+                <label>Standard-MwSt. (%)</label>
+                <input v-model.number="doc.defaultTax" type="number" min="0" max="100" placeholder="19" />
+              </div>
+              <div class="field-group">
+                <label>Rechnungsnr.-Format</label>
+                <input v-model="doc.invoiceFormat" type="text" placeholder="RE-{YYYY}-{NNN}" />
+              </div>
+              <div class="field-group field-group--full">
+                <label>Standard-Fußzeile</label>
+                <input v-model="doc.footerText" type="text" placeholder="Logo oHG | Musterstraße 21 | logo@mail.de" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Save button -->
+        <div class="save-row">
+          <transition name="fade-check" mode="out-in">
             <button
-              v-if="!isEditing"
-              class="btn primary"
-              type="button"
-              @click="isEditing = true"
+              v-if="!docSaved"
+              key="save"
+              class="btn-save"
+              @click="saveDoc"
             >
-              Edit
+              Speichern
             </button>
-
-            <template v-else>
-              <button
-                class="btn"
-                type="button"
-                @click="cancel"
-                :disabled="isSaving"
-              >
-                Cancel
-              </button>
-              <button
-                class="btn primary"
-                type="button"
-                @click="save"
-                :disabled="isSaving"
-              >
-                Save
-              </button>
-            </template>
-          </div>
-        </div>
-
-        <form class="form" @submit.prevent>
-          <div class="grid">
-            <div class="field">
-              <label for="companyName">Company name</label>
-              <input
-                id="companyName"
-                v-model.trim="company.companyName"
-                type="text"
-                :disabled="!isEditing"
-              />
+            <div v-else key="saved" class="btn-saved">
+              <Check :size="15" />
+              Einstellungen gespeichert
             </div>
-
-            <div class="field">
-              <label for="contactName">Contact name</label>
-              <input
-                id="contactName"
-                v-model.trim="company.contactName"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="email">Email</label>
-              <input
-                id="email"
-                v-model.trim="company.email"
-                type="email"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="phone">Phone</label>
-              <input
-                id="phone"
-                v-model.trim="company.phone"
-                type="tel"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="street">Street</label>
-              <input
-                id="street"
-                v-model.trim="company.street"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="houseNumber">House number</label>
-              <input
-                id="houseNumber"
-                v-model.trim="company.houseNumber"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="zip">ZIP</label>
-              <input
-                id="zip"
-                v-model.trim="company.zip"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="city">City</label>
-              <input
-                id="city"
-                v-model.trim="company.city"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="country">Country</label>
-              <input
-                id="country"
-                v-model.trim="company.country"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="iban">IBAN</label>
-              <input
-                id="iban"
-                v-model.trim="company.iban"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="bic">BIC</label>
-              <input
-                id="bic"
-                v-model.trim="company.bic"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="bankName">Bank name</label>
-              <input
-                id="bankName"
-                v-model.trim="company.bankName"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="accountHolder">Account holder</label>
-              <input
-                id="accountHolder"
-                v-model.trim="company.accountHolder"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="taxNumber">Tax number</label>
-              <input
-                id="taxNumber"
-                v-model.trim="company.taxNumber"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="vatId">VAT ID</label>
-              <input
-                id="vatId"
-                v-model.trim="company.vatId"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="website">Website</label>
-              <input
-                id="website"
-                v-model.trim="company.website"
-                type="url"
-                :disabled="!isEditing"
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-2">
-            <div class="field">
-              <label for="invoicePrefix">Invoice prefix</label>
-              <input
-                id="invoicePrefix"
-                v-model.trim="company.invoicePrefix"
-                type="text"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="nextInvoiceNo">Next invoice number</label>
-              <input
-                id="nextInvoiceNo"
-                v-model.number="company.nextInvoiceNo"
-                type="number"
-                min="1"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="paymentDays">Payment days</label>
-              <input
-                id="paymentDays"
-                v-model.number="company.paymentDays"
-                type="number"
-                min="1"
-                :disabled="!isEditing"
-              />
-            </div>
-
-            <div class="field">
-              <label for="defaultVatRate">Default VAT rate</label>
-              <input
-                id="defaultVatRate"
-                v-model.number="company.defaultVatRate"
-                type="number"
-                min="0"
-                max="1"
-                step="0.01"
-                :disabled="!isEditing"
-              />
-              <small class="small">0.19 means 19%.</small>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="invoiceFooter">Invoice footer</label>
-            <textarea
-              id="invoiceFooter"
-              v-model.trim="company.invoiceFooter"
-              rows="4"
-              :disabled="!isEditing"
-            />
-          </div>
-
-          <p v-if="message" class="message">{{ message }}</p>
-        </form>
-      </section>
-
-      <div class="divider"></div>
-
-      <section class="content">
-        <div class="head head-split">
-          <div>
-            <h2>Theme</h2>
-            <p class="hint">Changes this device only.</p>
-          </div>
-        </div>
-
-        <div class="theme">
-          <button
-            class="theme-btn"
-            :class="{ active: theme === 'system' }"
-            type="button"
-            @click="setTheme('system')"
-          >
-            System
-          </button>
-          <button
-            class="theme-btn"
-            :class="{ active: theme === 'light' }"
-            type="button"
-            @click="setTheme('light')"
-          >
-            Light
-          </button>
-          <button
-            class="theme-btn"
-            :class="{ active: theme === 'dark' }"
-            type="button"
-            @click="setTheme('dark')"
-          >
-            Dark
-          </button>
+          </transition>
         </div>
       </section>
-    </section>
+
+      <!-- ════════════════════════════════════
+           TAB: Theme
+      ════════════════════════════════════ -->
+      <section v-if="activeTab === 'theme'" class="settings-section">
+        <div class="section-header">
+          <h2 class="section-title">Design</h2>
+          <p class="section-desc">Wähle das Erscheinungsbild der Anwendung.</p>
+        </div>
+
+        <div class="settings-card">
+          <div class="card-block">
+            <h3 class="card-block__title">Farbschema</h3>
+
+            <div class="theme-options">
+              <button
+                v-for="option in themeOptions"
+                :key="option.id"
+                class="theme-card"
+                :class="{ 'theme-card--active': selectedTheme === option.id }"
+                @click="selectTheme(option.id)"
+              >
+                <!-- Visual preview mockup -->
+                <div class="theme-card__preview" :class="`theme-card__preview--${option.id}`">
+                  <div class="preview-nav"></div>
+                  <div class="preview-body">
+                    <div class="preview-sidebar"></div>
+                    <div class="preview-main">
+                      <div class="preview-block"></div>
+                      <div class="preview-block preview-block--short"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="theme-card__footer">
+                  <span class="theme-card__label">{{ option.label }}</span>
+                  <span class="theme-card__check" :class="{ 'theme-card__check--active': selectedTheme === option.id }">
+                    <Check :size="12" />
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <div class="save-row">
+          <transition name="fade-check" mode="out-in">
+            <button
+              v-if="!themeSaved"
+              key="save"
+              class="btn-save"
+              @click="saveTheme"
+            >
+              Speichern
+            </button>
+            <div v-else key="saved" class="btn-saved">
+              <Check :size="15" />
+              Einstellungen gespeichert
+            </div>
+          </transition>
+        </div>
+      </section>
+
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from "vue";
+import { ref, reactive, watch } from 'vue'
+import { Check } from 'lucide-vue-next'
 
-type Defaults = {
-  invoicePrefix: string;
-  nextInvoiceNo: number;
-  paymentDays: number;
-  defaultVatRate: number;
-  invoiceFooter: string;
-};
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-type CompanySettings = {
-  companyName: string;
-  contactName?: string;
-  street: string;
-  houseNumber: string;
-  zip: string;
-  city: string;
-  country: string;
-  email: string;
-  phone: string;
-  website?: string;
-  taxNumber?: string;
-  vatId?: string;
-  iban?: string;
-  bic?: string;
-  bankName?: string;
-  accountHolder?: string;
-  invoicePrefix: string;
-  nextInvoiceNo: number;
-  paymentDays: number;
-  defaultVatRate: number;
-  invoiceFooter?: string;
-};
+const tabs: Array<{ id: 'document' | 'theme'; label: string }> = [
+  { id: 'document', label: 'Einstellungen' },
+  { id: 'theme',    label: 'Creator'       },
+]
 
-const mode = ref<"defaults" | "company">("defaults");
-const isEditing = ref(false);
-const isSaving = ref(false);
-const message = ref("");
+const activeTab = ref<'document' | 'theme'>('document')
 
-const theme = ref<"system" | "light" | "dark">("system");
+// ─── Document settings ────────────────────────────────────────────────────────
 
-const defaults = reactive<Defaults>({
-  invoicePrefix: "INV",
-  nextInvoiceNo: 1,
-  paymentDays: 14,
-  defaultVatRate: 0.19,
-  invoiceFooter: "",
-});
+const doc = reactive({
+  companyName:   '',
+  companyStreet: '',
+  companyCity:   '',
+  taxId:         '',
+  contact:       '',
+  bankName:      '',
+  iban:          '',
+  bic:           '',
+  defaultTax:    19,
+  invoiceFormat: 'RE-{YYYY}-{NNN}',
+  footerText:    '',
+})
 
-const emptyCompany = (): CompanySettings => ({
-  companyName: "",
-  contactName: "",
-  street: "",
-  houseNumber: "",
-  zip: "",
-  city: "",
-  country: "",
-  email: "",
-  phone: "",
-  website: "",
-  taxNumber: "",
-  vatId: "",
-  iban: "",
-  bic: "",
-  bankName: "",
-  accountHolder: "",
-  invoicePrefix: "INV",
-  nextInvoiceNo: 1,
-  paymentDays: 14,
-  defaultVatRate: 0.19,
-  invoiceFooter: "",
-});
+const docSaved = ref(false)
+let docTimer: ReturnType<typeof setTimeout>
 
-const company = reactive<CompanySettings>(emptyCompany());
-const snapshot = ref<CompanySettings>(emptyCompany());
-
-function deepCopy<T>(v: T): T {
-  return JSON.parse(JSON.stringify(v)) as T;
+function saveDoc() {
+  // Persist to localStorage so Creator can read on mount
+  localStorage.setItem('invar_doc_settings', JSON.stringify({ ...doc }))
+  docSaved.value = true
+  clearTimeout(docTimer)
+  docTimer = setTimeout(() => { docSaved.value = false }, 3000)
 }
 
-function loadCompany() {
-  const raw = localStorage.getItem("app.companySettings");
-  if (!raw) {
-    snapshot.value = deepCopy(company);
-    return;
-  }
-  try {
-    const parsed = JSON.parse(raw);
-    Object.assign(company, { ...emptyCompany(), ...parsed });
-    snapshot.value = deepCopy(company);
-  } catch {
-    snapshot.value = deepCopy(company);
+// Load on mount
+const stored = localStorage.getItem('invar_doc_settings')
+if (stored) {
+  try { Object.assign(doc, JSON.parse(stored)) } catch {  }
+}
+
+// ─── Theme settings ───────────────────────────────────────────────────────────
+
+const themeOptions = [
+  { id: 'light',  label: 'Hell'   },
+  { id: 'dark',   label: 'Dunkel' },
+  { id: 'system', label: 'System' },
+]
+
+const selectedTheme = ref<'light' | 'dark' | 'system'>('system')
+const themeSaved = ref(false)
+let themeTimer: ReturnType<typeof setTimeout>
+
+// Load saved theme
+const storedTheme = localStorage.getItem('invar_theme')
+if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
+  selectedTheme.value = storedTheme
+}
+
+function selectTheme(id: 'light' | 'dark' | 'system') {
+  selectedTheme.value = id
+}
+
+function applyTheme(theme: 'light' | 'dark' | 'system') {
+  const root = document.documentElement
+  if (theme === 'system') {
+    root.removeAttribute('data-theme')
+  } else {
+    root.setAttribute('data-theme', theme)
   }
 }
 
-function loadTheme() {
-  const stored = localStorage.getItem("app.theme");
-  if (stored === "light" || stored === "dark" || stored === "system") {
-    theme.value = stored;
-  }
+function saveTheme() {
+  localStorage.setItem('invar_theme', selectedTheme.value)
+  applyTheme(selectedTheme.value)
+  themeSaved.value = true
+  clearTimeout(themeTimer)
+  themeTimer = setTimeout(() => { themeSaved.value = false }, 3000)
 }
 
-function applyTheme(t: "system" | "light" | "dark") {
-  document.documentElement.dataset.theme = t;
-}
-
-function setTheme(t: "system" | "light" | "dark") {
-  theme.value = t;
-  localStorage.setItem("app.theme", t);
-  applyTheme(t);
-}
-
-function switchMode(target: "defaults" | "company") {
-  if (mode.value === target) return;
-  if (mode.value === "company" && isEditing.value) cancel();
-  mode.value = target;
-}
-
-function cancel() {
-  Object.assign(company, deepCopy(snapshot.value));
-  isEditing.value = false;
-  message.value = "Cancelled.";
-}
-
-function save() {
-  isSaving.value = true;
-  message.value = "";
-  try {
-    snapshot.value = deepCopy(company);
-    localStorage.setItem("app.companySettings", JSON.stringify(snapshot.value));
-    isEditing.value = false;
-    message.value = "Saved.";
-  } finally {
-    isSaving.value = false;
-  }
-}
-
-onMounted(() => {
-  loadCompany();
-  loadTheme();
-  applyTheme(theme.value);
-});
-
-watch(
-  () => theme.value,
-  (t) => applyTheme(t),
-);
+// Apply on load
+applyTheme(selectedTheme.value)
 </script>
 
 <style scoped>
-.settings-page {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 24px;
-  font-family:
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Arial,
-    sans-serif;
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.settings-layout {
+  display: flex;
+  min-height: calc(100vh - 64px);
+  background: var(--primary-background-color);
+  font-family: 'Aspekta', sans-serif;
+  color: var(--primary-text-color);
 }
 
-.header h1 {
+/* ─── Sidebar ────────────────────────────────────────────────────────────── */
+.settings-sidebar {
+  width: 280px;
+  min-width: 220px;
+  flex-shrink: 0;
+  padding: 32px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--primary-background-color);
+}
+
+.settings-sidebar__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary-text-color);
   margin: 0;
-  font-size: 24px;
+  padding: 0 8px;
+  letter-spacing: -0.3px;
 }
 
-.subtitle {
-  margin: 6px 0 0;
-  opacity: 0.75;
-}
-
-.panel {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 14px;
-  padding: 16px;
+/* Nav island */
+.settings-nav {
   background: #fff;
+  border: 1px solid var(--border-bottom);
+    overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.mode {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: stretch;
+[data-theme="dark"] .settings-nav {
+  background: #1a1a1a;
+  border-color: rgba(255,255,255,0.12);
 }
 
-.mode-card {
+.settings-nav__item {
+  width: 100%;
   text-align: left;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 14px;
-  padding: 14px;
-  background: rgba(0, 0, 0, 0.02);
-  cursor: pointer;
-}
-
-.mode-card.active {
-  border-color: rgba(0, 0, 0, 0.35);
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.mode-title {
-  font-weight: 600;
-  color: #111;
-}
-
-.mode-sub {
-  margin-top: 6px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-bottom);
+  padding: 13px 16px;
+  font-family: 'Aspekta', sans-serif;
   font-size: 13px;
-  opacity: 0.7;
+  font-weight: 400;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: background 0.13s;
 }
 
-.divider {
-  height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-  margin: 16px 0;
+.settings-nav__item:last-child {
+  border-bottom: none;
 }
 
-.content {
+.settings-nav__item:hover {
+  background: var(--highlited);
+}
+
+.settings-nav__item--active {
+  background: var(--highlited);
+  font-weight: 600;
+}
+
+/* ─── Content area ───────────────────────────────────────────────────────── */
+.settings-content {
+  flex: 1;
+  padding: 32px 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ─── Section wrapper ────────────────────────────────────────────────────── */
+.settings-section {
+  width: 100%;
+  max-width: 1060px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-bottom);
+}
+
+/* ─── Each bordered block ────────────────────────────────────────────────── */
+.section-header,
+.card-block,
+.save-row {
+  background: #fff;
+  border-top: 1px solid var(--border-bottom);
+  border-bottom: 1px solid var(--border-bottom);
+  margin-top: -1px;
+}
+
+[data-theme="dark"] .section-header,
+[data-theme="dark"] .card-block,
+[data-theme="dark"] .save-row {
+  background: #1a1a1a;
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* ─── Section header block ───────────────────────────────────────────────── */
+.section-header {
+  padding: 28px 32px 24px;
+  margin-top: 0;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0 0 8px;
+  color: var(--primary-text-color);
+}
+
+.section-desc {
+  font-size: 13px;
+  color: var(--primary-text-color);
+  opacity: 0.55;
+  margin: 0;
+}
+
+/* ─── Settings card — now just a wrapper, no own border/shadow ───────────── */
+.settings-card {
+  display: contents; /* children participate directly in section flow */
+}
+
+.card-block {
+  padding: 20px 32px 24px;
+}
+
+.card-block__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-text-color);
+  margin: 0 0 18px;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 1;
+}
+
+/* remove the old explicit divider — borders between blocks handle it */
+.card-divider { display: none; }
+
+/* ─── Field grid ─────────────────────────────────────────────────────────── */
+.field-grid {
   display: grid;
-  gap: 14px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px 20px;
 }
 
-.head {
-  display: grid;
+.field-group {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
-.head-split {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
+.field-group--full {
+  grid-column: 1 / -1;
 }
 
-.actions {
-  display: flex;
-  gap: 10px;
-}
-
-.hint {
-  margin: 0;
+.field-group label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--primary-text-color);
   opacity: 0.7;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.field-group input {
+  border: none;
+  padding: 8px 10px;
   font-size: 13px;
-}
-
-.form {
-  display: grid;
-  gap: 14px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.grid-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.field label {
-  display: block;
-  font-size: 13px;
-  margin: 0 0 6px;
-  opacity: 0.9;
-}
-
-.field input,
-.field textarea {
+  font-family: 'Aspekta', sans-serif;
+  color: var(--primary-text-color);
+  background: var(--seoncdary-background-color);
+  outline: none;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  outline: none;
-  background: #fff;
-  color: #111;
+  transition: box-shadow 0.14s;
 }
 
-.field textarea {
-  resize: vertical;
+.field-group input:focus {
+  box-shadow: 0 0 0 2px var(--primary-accent-color);
 }
 
-.field input:disabled,
-.field textarea:disabled {
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.65);
-  border-color: rgba(0, 0, 0, 0.1);
-  cursor: not-allowed;
+[data-theme="dark"] .field-group input {
+  background: #2a2a2a;
+  color: #f0f0f0;
 }
 
-.small {
-  display: block;
-  margin-top: 6px;
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.btn {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  background: #fff;
-  cursor: pointer;
-  color: #111;
-}
-
-.btn:hover {
-  border-color: rgba(0, 0, 0, 0.35);
-}
-
-.btn.primary {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.35);
-  font-weight: 600;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.message {
-  margin: 0;
-  opacity: 0.85;
-}
-
-.theme {
+/* ─── Save row ───────────────────────────────────────────────────────────── */
+.save-row {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px 32px;
+}
+
+.btn-save {
+  padding: 10px 28px;
+  background: var(--primary-accent-color);
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Aspekta', sans-serif;
+  cursor: pointer;
+  transition: background 0.14s, transform 0.1s;
+  letter-spacing: -0.1px;
+}
+
+.btn-save:hover  { background: #0520a0; }
+.btn-save:active { transform: scale(0.97); }
+
+.btn-saved {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--settings-saved);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Aspekta', sans-serif;
+}
+
+/* ─── Fade-check transition ──────────────────────────────────────────────── */
+.fade-check-enter-active,
+.fade-check-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.fade-check-enter-from { opacity: 0; transform: translateY(4px); }
+.fade-check-leave-to   { opacity: 0; transform: translateY(-4px); }
+
+/* ─── Theme selector ─────────────────────────────────────────────────────── */
+.theme-options {
+  display: flex;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.theme-btn {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  background: #fff;
+.theme-card {
+  background: none;
+  border: 1.5px solid var(--seoncdary-background-color);
+  padding: 0;
   cursor: pointer;
-  color: #111;
+  overflow: hidden;
+  width: 160px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Aspekta', sans-serif;
 }
 
-.theme-btn.active {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.35);
+.theme-card:hover {
+  border-color: rgba(7, 42, 200, 0.4);
+}
+
+.theme-card--active {
+  border-color: var(--primary-accent-color);
+  box-shadow: 0 0 0 1px var(--primary-accent-color);
+}
+
+/* Preview mockup */
+.theme-card__preview {
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Light preview */
+.theme-card__preview--light .preview-nav   { background: #000814; height: 16px; flex-shrink: 0; }
+.theme-card__preview--light .preview-body  { display: flex; flex: 1; background: #f5f5f5; }
+.theme-card__preview--light .preview-sidebar { width: 36px; background: #e2e2e2; flex-shrink: 0; }
+.theme-card__preview--light .preview-main  { flex: 1; padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; }
+.theme-card__preview--light .preview-block { background: #fff; height: 14px; border-radius: 2px; }
+.theme-card__preview--light .preview-block--short { width: 60%; }
+
+/* Dark preview */
+.theme-card__preview--dark .preview-nav   { background: #000; height: 16px; flex-shrink: 0; }
+.theme-card__preview--dark .preview-body  { display: flex; flex: 1; background: #111; }
+.theme-card__preview--dark .preview-sidebar { width: 36px; background: #1e1e1e; flex-shrink: 0; }
+.theme-card__preview--dark .preview-main  { flex: 1; padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; }
+.theme-card__preview--dark .preview-block { background: #2a2a2a; height: 14px; border-radius: 2px; }
+.theme-card__preview--dark .preview-block--short { width: 60%; }
+
+/* System preview — split half/half */
+.theme-card__preview--system {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.theme-card__preview--system .preview-nav    { display: none; }
+.theme-card__preview--system .preview-body   { display: contents; }
+.theme-card__preview--system .preview-sidebar { display: none; }
+.theme-card__preview--system .preview-main   { display: none; }
+
+/* custom split via ::before / ::after on the preview element itself */
+.theme-card__preview--system::before {
+  content: '';
+  display: block;
+  background: #f5f5f5;
+  height: 100%;
+}
+.theme-card__preview--system::after {
+  content: '';
+  display: block;
+  background: #111;
+  height: 100%;
+}
+
+/* Footer row inside card */
+.theme-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-top: 1px solid var(--seoncdary-background-color);
+  background: var(--primary-background-color);
+}
+
+[data-theme="dark"] .theme-card__footer {
+  background: #1a1a1a;
+  border-top-color: rgba(255,255,255,0.1);
+}
+
+.theme-card__label {
+  font-size: 12px;
   font-weight: 600;
+  color: var(--primary-text-color);
 }
 
+.theme-card__check {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--seoncdary-background-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+  flex-shrink: 0;
+}
+
+.theme-card__check--active {
+  background: var(--primary-accent-color);
+  border-color: var(--primary-accent-color);
+  color: #fff;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .field-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-@media (max-width: 560px) {
-  .mode {
-    grid-template-columns: 1fr;
-  }
-  .grid {
-    grid-template-columns: 1fr;
-  }
-  .head-split {
+@media (max-width: 768px) {
+  .settings-layout {
     flex-direction: column;
-    align-items: stretch;
   }
-  .actions {
-    justify-content: flex-end;
+
+  .settings-sidebar {
+    width: 100%;
+    padding: 20px 16px 12px;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
   }
+
+  .settings-sidebar__title {
+    flex-shrink: 0;
+  }
+
+  .settings-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    border-radius: 6px;
+    flex: 1;
+  }
+
+  .settings-nav__item {
+    border-bottom: none;
+    border-right: 1px solid var(--border-bottom);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .settings-nav__item:last-child {
+    border-right: none;
+  }
+
+  .settings-content {
+    padding: 16px;
+  }
+
+  .section-header,
+  .card-block,
+  .save-row {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-group--full {
+    grid-column: 1;
+  }
+
+  .theme-options { gap: 12px; }
+  .theme-card { width: 130px; }
 }
 </style>

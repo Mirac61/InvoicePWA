@@ -1,0 +1,41 @@
+:root{
+    --primary-text-color: #090909;
+    
+    --primary-accent-color: #072AC8;
+    --secondary-accent-color: #000814;
+
+    --primary-background-color: #F5F5F5;
+    --secondary-background-color: #E2E2E2;
+
+
+
+}
+
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  body.printing #invoice-preview,
+  body.printing #invoice-preview * {
+    visibility: visible;
+  }
+
+  body.printing #invoice-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20mm 20mm;
+    box-shadow: none;
+    border-radius: 0;
+    font-size: 11pt;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}

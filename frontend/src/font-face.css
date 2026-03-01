@@ -1,0 +1,24 @@
+@font-face {
+  font-family: 'Aspekta';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../Aspekta/Aspekta-400.woff2') format('woff2');
+
+}
+
+@font-face {
+  font-family: 'Aspekta';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../Aspekta/Aspekta-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Aspekta';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../Aspekta/Aspekta-700.woff2') format('woff2');
+}
