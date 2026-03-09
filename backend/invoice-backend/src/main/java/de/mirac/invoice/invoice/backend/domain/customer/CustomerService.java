@@ -1,9 +1,11 @@
 package de.mirac.invoice.invoice.backend.domain.customer;
 
+import java.util.Optional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -26,6 +28,10 @@ public class CustomerService {
     public Customer getById(@NonNull String id) {
         return customerRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("Customer not found: " + id));
+    }
+
+    public Optional<Customer> findById(@NonNull String id) {
+        return customerRepository.findById(id);
     }
 
     public Customer update(@NonNull String id, Customer input) {
