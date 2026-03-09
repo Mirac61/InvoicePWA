@@ -167,7 +167,7 @@
               <!-- ── GREETING / Anrede ───────────────────────────── -->
               <template v-if="section.type === 'greeting'">
                 <div class="field-group">
-                  <label>Rechnungsnummer</label>
+                  <label>Anrede</label>
                   <textarea
                     v-model="invoiceData.intro"
                     rows="5"
@@ -313,7 +313,7 @@
     </aside>
 
     <!-- ═══════════════════════════════════════════════════════════
-         RIGHT PANEL — Preview
+          Preview
     ════════════════════════════════════════════════════════════ -->
     <main class="preview-panel">
       <div class="preview-header">
