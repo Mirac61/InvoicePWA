@@ -160,4 +160,4 @@ npm run preview
 
 ## Lizenz
 
-Private Nutzung für dieses Projekt. 
+Private Nutzung für dieses Projekt.
