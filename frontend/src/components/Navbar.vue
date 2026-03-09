@@ -9,7 +9,7 @@ const Components = {
     Creator,
     Settings
 };
-
+    
 
 const activeComponent = ref<keyof typeof Components>('Home');
 
