@@ -247,7 +247,8 @@
         <table v-else class="tbl">
           <thead>
             <tr>
-              <th>Name & Adresse</th>
+              <th>Name</th>
+              <th>Adresse</th>
               <th>Typ</th>
               <th>E-Mail</th>
               <th>Telefon</th>
@@ -264,12 +265,10 @@
                   </div>
                   <div>
                     <div class="bold">{{ c.forename }} {{ c.surname }}</div>
-                    <div class="sub">
-                      {{ c.street }}, {{ c.zip }} {{ c.city }}
-                    </div>
                   </div>
                 </div>
               </td>
+              <td>{{ c.street }}, {{ c.zip }} {{ c.city }}</td>
               <td>
                 <span
                   class="badge"
