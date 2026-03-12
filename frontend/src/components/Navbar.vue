@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 import Creator from "./creator/CreatorLayout.vue";
 import Settings from "./Settings.vue";
 import Home from "./Home.vue";
-import Management from "./Management.vue";
+import Management from "./Editor.vue";
 
 const Components = {
   Home,
