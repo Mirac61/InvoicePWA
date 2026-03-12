@@ -8,6 +8,12 @@
           <option value="modern">Modern</option>
           <option value="minimal">Minimal</option>
         </select>
+
+          <select v-model="selectedFont" class="template-select">
+            <option v-for="font in fontOptions" :key="font.label" :value="font.label">
+              {{ font.label }}
+    </option> 
+  </select>
       </div>
     </div>
 
@@ -17,6 +23,7 @@
           id="invoice-preview"
           class="invoice-preview"
           :class="`template--${selectedTemplate}`"
+          :style="{'--invoice-font': currentFont.family}"
         >
           <template v-for="section in sections" :key="section.id">
             <!-- HEADER -->
@@ -197,7 +204,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Download } from "lucide-vue-next";
 import {
   invoiceData,
@@ -210,6 +217,7 @@ import {
 } from "../../composables/invoiceData";
 import { sections } from "../../composables/sectionOrdering";
 import { downloadPDF } from "../../composables/pdfExport";
+import { fontOptions, selectedFont, activeFontOption } from "../../composables/fontSelection";
 
 defineProps<{ isSaving: boolean }>();
 
@@ -218,4 +226,6 @@ const emit = defineEmits<{
 }>();
 
 const selectedTemplate = ref<"classic" | "modern" | "minimal">("classic");
+
+const currentFont = computed(() => activeFontOption())
 </script>

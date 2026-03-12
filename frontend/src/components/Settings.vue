@@ -95,7 +95,7 @@
               </div>
               <div class="field-group field-group--full">
                 <label>Standard-Fußzeile</label>
-                <input v-model="doc.footerText" type="text" placeholder="Logo oHG | Musterstraße 21 | logo@mail.de" />
+                <input v-model="doc.footerText" type="text" placeholder="Das Invar Unternehmen GmbH | Musterstraße 21 | logo@mail.de" />
               </div>
             </div>
           </div>
@@ -236,7 +236,7 @@ if (stored) {
 
 // ─── Theme settings ───────────────────────────────────────────────────────────
 
-const themeOptions = [
+const themeOptions: Array<{ id: 'light' | 'dark' | 'system'; label: string }> = [
   { id: 'light',  label: 'Hell'   },
   { id: 'dark',   label: 'Dunkel' },
   { id: 'system', label: 'System' },

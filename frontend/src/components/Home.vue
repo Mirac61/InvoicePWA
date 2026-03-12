@@ -21,7 +21,6 @@ import { CirclePlus } from 'lucide-vue-next';
     display: flex;
     background-color: var(--primary-background-color);
     padding: 8rem 4.6rem;
-    border-radius: 1rem;
     border: 2px dashed var(--dotted-border);
     width: fit-content;
     margin: 0 0 0 7.5rem;

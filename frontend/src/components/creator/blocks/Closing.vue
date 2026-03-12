@@ -13,7 +13,7 @@
       <input
         v-model="invoiceData.footerText"
         type="text"
-        placeholder="Logo oHG | Musterstraße 21 | Tel: ..."
+        placeholder="Company oHG | Musterstraße 21 | Tel: ..."
       />
     </div>
   </div>

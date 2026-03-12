@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import Creator from "./creator/CreatorLayout.vue";
 import Settings from "./Settings.vue";
 import Home from "./Home.vue";
-import Management from "./Editor.vue";
+import CreatorLayout from "./creator/CreatorLayout.vue";
+import Management from "./Management.vue";
 
 const Components = {
   Home,
-  Creator,
-  Management,
+  Creator: CreatorLayout,
   Settings,
+  Management,   
 };
 
 const activeComponent = ref<keyof typeof Components>("Home");

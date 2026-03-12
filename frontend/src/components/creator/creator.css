@@ -1,7 +1,10 @@
 /* ============================================================
-   Creator – alle Styles
-   Importiert in CreatorLayout.vue
+   Creator – all styles imported
 ============================================================ */
+
+*:not(.invoice-preview):not(.invoice-preview *) {
+  font-family: Aspekta, "sans-serif";
+}
 
 /* ── Customer search dropdown ─────────────────────────────────────────────── */
 .customer-search-wrap {
@@ -15,7 +18,7 @@
   right: 0;
   background: #fff;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   z-index: 999;
   overflow: hidden;
@@ -75,7 +78,6 @@
   background: #fff;
   color: #1a56db;
   border: 2px solid #1a56db;
-  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
@@ -129,6 +131,7 @@
 
 .editor-title {
   font-size: 20px;
+  font-family: Aspekta, 'sans-serif';
   font-weight: 700;
   letter-spacing: -0.4px;
   color: #111;
@@ -155,14 +158,13 @@
 }
 .sections-list::-webkit-scrollbar-thumb {
   background: #ddd;
-  border-radius: 2px;
 }
 
 /* ── Section card ─────────────────────────────────────────────────────────── */
 .section-card {
   background: #fafaf8;
   border: 1px solid #e8e8e4;
-  border-radius: 10px;
+  
   overflow: hidden;
   transition:
     border-color 0.14s,
@@ -190,7 +192,7 @@
   justify-content: space-between;
   padding: 11px 13px;
   cursor: pointer;
-  user-select: none;
+  -webkit-user-select: none;
 }
 
 .section-card__left {
@@ -238,7 +240,6 @@
   border: none;
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: 4px;
   font-size: 11px;
   color: #ccc;
   transition:
@@ -281,6 +282,7 @@
   flex-direction: column;
   gap: 4px;
   margin-top: 10px;
+  font-weight: 700;
 }
 
 .field-group > label {
@@ -306,7 +308,6 @@ input[type="number"],
 textarea,
 select {
   border: 1px solid #e2e2de;
-  border-radius: 6px;
   padding: 7px 10px;
   font-size: 13px;
   font-family: inherit;
@@ -338,7 +339,6 @@ textarea {
   color: #888;
   background: none;
   border: 1px dashed #d8d8d4;
-  border-radius: 6px;
   cursor: pointer;
   transition: all 0.14s;
 }
@@ -350,7 +350,6 @@ textarea {
 /* ── Logo upload ──────────────────────────────────────────────────────────── */
 .logo-upload {
   border: 1.5px dashed #ddd;
-  border-radius: 8px;
   padding: 13px 16px;
   display: flex;
   align-items: center;
@@ -389,7 +388,6 @@ textarea {
 .logo-upload__btn {
   background: #f0f0ec;
   border: 1px solid #ddd;
-  border-radius: 5px;
   padding: 3px 10px;
   font-size: 12px;
   font-family: inherit;
@@ -450,7 +448,6 @@ textarea {
   gap: 5px;
   background: #f4f4f2;
   border: 1px solid #e4e4e0;
-  border-radius: 7px;
   padding: 4px 8px;
 }
 
@@ -489,7 +486,6 @@ textarea {
   color: #666;
   background: none;
   border: 1.5px dashed #d8d8d4;
-  border-radius: 6px;
   padding: 5px 12px;
   cursor: pointer;
   font-family: inherit;
@@ -536,7 +532,6 @@ textarea {
   padding: 8px;
   background: none;
   border: 1.5px dashed #d8d8d4;
-  border-radius: 6px;
   font-size: 12px;
   font-family: inherit;
   color: #888;
@@ -600,7 +595,6 @@ textarea {
   padding: 5px 10px;
   background: #f4f4f2;
   border: 1px solid #e4e4e0;
-  border-radius: 6px;
   font-size: 12px;
   font-family: inherit;
   color: #555;
@@ -642,7 +636,6 @@ textarea {
   width: auto;
   font-size: 13px;
   padding: 6px 12px;
-  border-radius: 7px;
   cursor: pointer;
   font-family: inherit;
 }
@@ -661,7 +654,6 @@ textarea {
 }
 .preview-wrapper::-webkit-scrollbar-thumb {
   background: #ccc;
-  border-radius: 2px;
 }
 
 .preview-scale-container {
@@ -690,16 +682,14 @@ textarea {
   justify-content: center;
   gap: 8px;
   padding: 12px 24px;
-  background: #1a56db;
+  background: var(--primary-accent-color);
   color: #fff;
   border: none;
-  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   pointer-events: all;
-  box-shadow: 0 2px 14px rgba(26, 86, 219, 0.32);
   transition:
     background 0.14s,
     transform 0.1s,
@@ -708,7 +698,6 @@ textarea {
 }
 .btn-download:hover {
   background: #1447b8;
-  box-shadow: 0 4px 18px rgba(26, 86, 219, 0.42);
 }
 .btn-download:active {
   transform: scale(0.97);
@@ -719,14 +708,16 @@ textarea {
 ══════════════════════════════════════════════════════ */
 .invoice-preview {
   background: #fff;
-  border-radius: 3px;
   box-shadow: 0 2px 24px rgba(0, 0, 0, 0.09);
   padding: 52px 56px 64px;
-  font-family: "Aspekta", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--invoice-font, 'Aspekta', sans-serif);
   font-size: 11px;
   color: #222;
   line-height: 1.55;
   min-height: 900px;
+}
+.invoice-preview * {
+  font-family: inherit;
 }
 
 /* Header */
@@ -745,7 +736,6 @@ textarea {
   width: 18px;
   height: 18px;
   background: #1a56db;
-  border-radius: 50%;
   flex-shrink: 0;
 }
 .inv-logo-wordmark {
@@ -956,7 +946,6 @@ textarea {
   color: #fff;
 }
 .template--modern .inv-logo-dot {
-  border-radius: 3px;
   background: #111;
 }
 
@@ -1000,7 +989,6 @@ textarea {
   min-width: 240px;
   background: #fff;
   border: 1px solid #ccc;
-  border-radius: 8px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   z-index: 999;
   overflow: hidden;
@@ -1073,7 +1061,6 @@ textarea {
 
 .modal-box {
   background: #fff;
-  border-radius: 14px;
   box-shadow: 0 8px 48px rgba(0, 0, 0, 0.18);
   width: 100%;
   max-width: 520px;
@@ -1107,7 +1094,6 @@ textarea {
   font-size: 14px;
   color: #aaa;
   padding: 4px 8px;
-  border-radius: 6px;
   transition:
     color 0.12s,
     background 0.12s;
@@ -1145,7 +1131,6 @@ textarea {
 .modal-body input,
 .modal-body select {
   border: 1px solid #e2e2de;
-  border-radius: 6px;
   padding: 7px 10px;
   font-size: 13px;
   font-family: inherit;
@@ -1169,7 +1154,6 @@ textarea {
   padding: 8px 12px;
   background: #fff5f5;
   border: 1px solid #fed7d7;
-  border-radius: 6px;
   font-size: 12px;
   color: #e53e3e;
 }
@@ -1187,7 +1171,6 @@ textarea {
   padding: 9px 18px;
   background: none;
   border: 1px solid #e2e2de;
-  border-radius: 7px;
   font-size: 13px;
   font-family: inherit;
   color: #555;
@@ -1202,7 +1185,6 @@ textarea {
   padding: 9px 20px;
   background: #1a56db;
   border: none;
-  border-radius: 7px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;

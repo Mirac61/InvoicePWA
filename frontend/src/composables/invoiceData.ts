@@ -44,7 +44,7 @@ export interface InvoiceData {
 export const invoiceData = reactive<InvoiceData>({
   logo: "",
   logoName: "",
-  companyName: "Logo oHG",
+  companyName: "Das Invar Unternehmen GmbH",
   companyStreet: "Musterstraße 21",
   companyCity: "73728 Esslingen am Neckar",
   taxId: "DE124356789",
@@ -105,7 +105,7 @@ export const invoiceData = reactive<InvoiceData>({
     "Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer.",
   closingText: "Wir bedanken uns für Ihren Auftrag.",
   footerText:
-    "Logo oHG | Musterstraße 21, 73728 Esslingen am Neckar | logo@mail.de | Tel.: 0737 281204",
+    "Das Invar Unternehmen GmbH | Musterstraße 21, 73728 Esslingen am Neckar | logo@mail.de | Tel.: 0737 281204",
 });
 
 // Restore persisted settings

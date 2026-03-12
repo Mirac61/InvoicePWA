@@ -990,7 +990,7 @@ interface Item {
 }
 
 const activeTab = ref<"invoices" | "customers" | "items">("invoices");
-const tabs = [
+const tabs: { id: "invoices" | "customers" | "items"; label: string; icon: string }[] = [
   {
     id: "invoices",
     label: "Rechnungen",
