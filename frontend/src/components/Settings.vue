@@ -1,6 +1,119 @@
+<script setup lang="ts">
+import { ref, reactive, watch } from "vue";
+import { Check } from "lucide-vue-next";
+import { useBankAccounts } from "../composables/bankAccounts";
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+
+const tabs: Array<{ id: "document" | "theme"; label: string }> = [
+  { id: "document", label: "Einstellungen" },
+  { id: "theme", label: "Creator" },
+];
+
+const activeTab = ref<"document" | "theme">("document");
+
+// ─── Document settings ────────────────────────────────────────────────────────
+
+const doc = reactive({
+  companyName: "",
+  companyStreet: "",
+  companyCity: "",
+  taxId: "",
+  contact: "",
+  bankName: "",
+  iban: "",
+  bic: "",
+  defaultTax: 19,
+  invoiceFormat: "RE-{YYYY}-{NNN}",
+  footerText: "",
+});
+
+const docSaved = ref(false);
+let docTimer: ReturnType<typeof setTimeout>;
+
+function saveDoc() {
+  // Persist to localStorage so Creator can read on mount
+  localStorage.setItem("invar_doc_settings", JSON.stringify({ ...doc }));
+  docSaved.value = true;
+  clearTimeout(docTimer);
+  docTimer = setTimeout(() => {
+    docSaved.value = false;
+  }, 3000);
+}
+
+// Load on mount
+const stored = localStorage.getItem("invar_doc_settings");
+if (stored) {
+  try {
+    Object.assign(doc, JSON.parse(stored));
+  } catch {}
+}
+
+// ─── Theme settings ───────────────────────────────────────────────────────────
+
+const themeOptions = [
+  { id: "light", label: "Hell" },
+  { id: "dark", label: "Dunkel" },
+  { id: "system", label: "System" },
+];
+
+const selectedTheme = ref<"light" | "dark" | "system">("system");
+const themeSaved = ref(false);
+let themeTimer: ReturnType<typeof setTimeout>;
+
+// Load saved theme
+const storedTheme = localStorage.getItem("invar_theme");
+if (
+  storedTheme === "light" ||
+  storedTheme === "dark" ||
+  storedTheme === "system"
+) {
+  selectedTheme.value = storedTheme;
+}
+
+function selectTheme(id: "light" | "dark" | "system") {
+  selectedTheme.value = id;
+}
+
+function applyTheme(theme: "light" | "dark" | "system") {
+  const root = document.documentElement;
+  if (theme === "system") {
+    root.removeAttribute("data-theme");
+  } else {
+    root.setAttribute("data-theme", theme);
+  }
+}
+
+function saveTheme() {
+  localStorage.setItem("invar_theme", selectedTheme.value);
+  applyTheme(selectedTheme.value);
+  themeSaved.value = true;
+  clearTimeout(themeTimer);
+  themeTimer = setTimeout(() => {
+    themeSaved.value = false;
+  }, 3000);
+}
+// -----Bankinfo-------------------------------------------------
+const { bankAccounts, addAccount, deleteAccount, setDefault } =
+  useBankAccounts();
+const showAddForm = ref(false);
+const newAccount = reactive({ bankName: "", iban: "", bic: "" });
+
+function submitNewAccount() {
+  if (!newAccount.bankName || !newAccount.iban) return;
+  addAccount(newAccount.bankName, newAccount.iban, newAccount.bic);
+  newAccount.bankName = "";
+  newAccount.iban = "";
+  newAccount.bic = "";
+  showAddForm.value = false;
+}
+
+// Apply on load
+applyTheme(selectedTheme.value);
+</script>
+
 <template>
   <div class="settings-layout">
-
     <!-- ── Sidebar ─────────────────────────────────────────────── -->
     <aside class="settings-sidebar">
       <h1 class="settings-sidebar__title">Einstellungen</h1>
@@ -19,41 +132,62 @@
 
     <!-- ── Content ─────────────────────────────────────────────── -->
     <main class="settings-content">
-
       <!-- ════════════════════════════════════
            TAB: Dokumenteinstellungen
       ════════════════════════════════════ -->
       <section v-if="activeTab === 'document'" class="settings-section">
         <div class="section-header">
           <h2 class="section-title">Dokumenteinstellungen</h2>
-          <p class="section-desc">Diese Daten werden automatisch als Standardwerte im Creator vorausgefüllt.</p>
+          <p class="section-desc">
+            Diese Daten werden automatisch als Standardwerte im Creator
+            vorausgefüllt.
+          </p>
         </div>
 
         <div class="settings-card">
-
           <!-- Company block -->
           <div class="card-block">
             <h3 class="card-block__title">Unternehmen</h3>
             <div class="field-grid">
               <div class="field-group field-group--full">
                 <label>Firmenname</label>
-                <input v-model="doc.companyName" type="text" placeholder="Muster GmbH" />
+                <input
+                  v-model="doc.companyName"
+                  type="text"
+                  placeholder="Muster GmbH"
+                />
               </div>
               <div class="field-group">
                 <label>Straße & Nr.</label>
-                <input v-model="doc.companyStreet" type="text" placeholder="Musterstraße 21" />
+                <input
+                  v-model="doc.companyStreet"
+                  type="text"
+                  placeholder="Musterstraße 21"
+                />
               </div>
               <div class="field-group">
                 <label>PLZ & Stadt</label>
-                <input v-model="doc.companyCity" type="text" placeholder="73728 Esslingen" />
+                <input
+                  v-model="doc.companyCity"
+                  type="text"
+                  placeholder="73728 Esslingen"
+                />
               </div>
               <div class="field-group">
                 <label>USt-IdNr.</label>
-                <input v-model="doc.taxId" type="text" placeholder="DE123456789" />
+                <input
+                  v-model="doc.taxId"
+                  type="text"
+                  placeholder="DE123456789"
+                />
               </div>
               <div class="field-group">
                 <label>Ansprechpartner</label>
-                <input v-model="doc.contact" type="text" placeholder="Anna Musterfrau" />
+                <input
+                  v-model="doc.contact"
+                  type="text"
+                  placeholder="Anna Musterfrau"
+                />
               </div>
             </div>
           </div>
@@ -62,21 +196,89 @@
 
           <!-- Bank block -->
           <div class="card-block">
-            <h3 class="card-block__title">Bankverbindung</h3>
-            <div class="field-grid">
-              <div class="field-group field-group--full">
-                <label>Bank</label>
-                <input v-model="doc.bankName" type="text" placeholder="Deutsche Bank" />
+            <h3 class="card-block__title">Bankverbindungen</h3>
+
+            <!-- Liste -->
+            <div
+              v-for="account in bankAccounts"
+              :key="account.id"
+              class="bank-row"
+            >
+              <div class="bank-row__info">
+                <span class="bank-row__name">{{ account.bankName }}</span>
+                <span class="bank-row__iban">{{ account.iban }}</span>
               </div>
-              <div class="field-group">
-                <label>IBAN</label>
-                <input v-model="doc.iban" type="text" placeholder="DE98 1213 6424 1111 3465 9752" />
-              </div>
-              <div class="field-group">
-                <label>BIC</label>
-                <input v-model="doc.bic" type="text" placeholder="DBKEDFHH" />
+              <div class="bank-row__actions">
+                <span v-if="account.isDefault" class="bank-row__default-badge"
+                  >Standard</span
+                >
+                <button
+                  v-else
+                  class="bank-row__btn"
+                  @click="setDefault(account.id)"
+                >
+                  Als Standard
+                </button>
+                <button
+                  class="bank-row__btn bank-row__btn--danger"
+                  @click="deleteAccount(account.id)"
+                >
+                  Löschen
+                </button>
               </div>
             </div>
+
+            <!-- Leer-Zustand -->
+            <p v-if="bankAccounts.length === 0" class="bank-empty">
+              Noch keine Bankverbindung hinterlegt.
+            </p>
+
+            <!-- Formular -->
+            <div v-if="showAddForm" class="bank-form">
+              <div class="field-grid">
+                <div class="field-group field-group--full">
+                  <label>Bank</label>
+                  <input
+                    v-model="newAccount.bankName"
+                    type="text"
+                    placeholder="Deutsche Bank"
+                  />
+                </div>
+                <div class="field-group">
+                  <label>IBAN</label>
+                  <input
+                    v-model="newAccount.iban"
+                    type="text"
+                    placeholder="DE98..."
+                  />
+                </div>
+                <div class="field-group">
+                  <label>BIC</label>
+                  <input
+                    v-model="newAccount.bic"
+                    type="text"
+                    placeholder="DBKEDFHH"
+                  />
+                </div>
+              </div>
+              <div class="bank-form__actions">
+                <button class="btn-save" @click="submitNewAccount">
+                  Speichern
+                </button>
+                <button class="bank-row__btn" @click="showAddForm = false">
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+
+            <!-- Hinzufügen Button -->
+            <button
+              v-if="!showAddForm"
+              class="bank-add-btn"
+              @click="showAddForm = true"
+            >
+              + Bankverbindung hinzufügen
+            </button>
           </div>
 
           <div class="card-divider" />
@@ -87,19 +289,32 @@
             <div class="field-grid">
               <div class="field-group">
                 <label>Standard-MwSt. (%)</label>
-                <input v-model.number="doc.defaultTax" type="number" min="0" max="100" placeholder="19" />
+                <input
+                  v-model.number="doc.defaultTax"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="19"
+                />
               </div>
               <div class="field-group">
                 <label>Rechnungsnr.-Format</label>
-                <input v-model="doc.invoiceFormat" type="text" placeholder="RE-{YYYY}-{NNN}" />
+                <input
+                  v-model="doc.invoiceFormat"
+                  type="text"
+                  placeholder="RE-{YYYY}-{NNN}"
+                />
               </div>
               <div class="field-group field-group--full">
                 <label>Standard-Fußzeile</label>
-                <input v-model="doc.footerText" type="text" placeholder="Logo oHG | Musterstraße 21 | logo@mail.de" />
+                <input
+                  v-model="doc.footerText"
+                  type="text"
+                  placeholder="Logo oHG | Musterstraße 21 | logo@mail.de"
+                />
               </div>
             </div>
           </div>
-
         </div>
 
         <!-- Save button -->
@@ -143,7 +358,10 @@
                 @click="selectTheme(option.id)"
               >
                 <!-- Visual preview mockup -->
-                <div class="theme-card__preview" :class="`theme-card__preview--${option.id}`">
+                <div
+                  class="theme-card__preview"
+                  :class="`theme-card__preview--${option.id}`"
+                >
                   <div class="preview-nav"></div>
                   <div class="preview-body">
                     <div class="preview-sidebar"></div>
@@ -156,7 +374,12 @@
 
                 <div class="theme-card__footer">
                   <span class="theme-card__label">{{ option.label }}</span>
-                  <span class="theme-card__check" :class="{ 'theme-card__check--active': selectedTheme === option.id }">
+                  <span
+                    class="theme-card__check"
+                    :class="{
+                      'theme-card__check--active': selectedTheme === option.id,
+                    }"
+                  >
                     <Check :size="12" />
                   </span>
                 </div>
@@ -183,99 +406,9 @@
           </transition>
         </div>
       </section>
-
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { Check } from 'lucide-vue-next'
-
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
-
-const tabs: Array<{ id: 'document' | 'theme'; label: string }> = [
-  { id: 'document', label: 'Einstellungen' },
-  { id: 'theme',    label: 'Creator'       },
-]
-
-const activeTab = ref<'document' | 'theme'>('document')
-
-// ─── Document settings ────────────────────────────────────────────────────────
-
-const doc = reactive({
-  companyName:   '',
-  companyStreet: '',
-  companyCity:   '',
-  taxId:         '',
-  contact:       '',
-  bankName:      '',
-  iban:          '',
-  bic:           '',
-  defaultTax:    19,
-  invoiceFormat: 'RE-{YYYY}-{NNN}',
-  footerText:    '',
-})
-
-const docSaved = ref(false)
-let docTimer: ReturnType<typeof setTimeout>
-
-function saveDoc() {
-  // Persist to localStorage so Creator can read on mount
-  localStorage.setItem('invar_doc_settings', JSON.stringify({ ...doc }))
-  docSaved.value = true
-  clearTimeout(docTimer)
-  docTimer = setTimeout(() => { docSaved.value = false }, 3000)
-}
-
-// Load on mount
-const stored = localStorage.getItem('invar_doc_settings')
-if (stored) {
-  try { Object.assign(doc, JSON.parse(stored)) } catch {  }
-}
-
-// ─── Theme settings ───────────────────────────────────────────────────────────
-
-const themeOptions = [
-  { id: 'light',  label: 'Hell'   },
-  { id: 'dark',   label: 'Dunkel' },
-  { id: 'system', label: 'System' },
-]
-
-const selectedTheme = ref<'light' | 'dark' | 'system'>('system')
-const themeSaved = ref(false)
-let themeTimer: ReturnType<typeof setTimeout>
-
-// Load saved theme
-const storedTheme = localStorage.getItem('invar_theme')
-if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
-  selectedTheme.value = storedTheme
-}
-
-function selectTheme(id: 'light' | 'dark' | 'system') {
-  selectedTheme.value = id
-}
-
-function applyTheme(theme: 'light' | 'dark' | 'system') {
-  const root = document.documentElement
-  if (theme === 'system') {
-    root.removeAttribute('data-theme')
-  } else {
-    root.setAttribute('data-theme', theme)
-  }
-}
-
-function saveTheme() {
-  localStorage.setItem('invar_theme', selectedTheme.value)
-  applyTheme(selectedTheme.value)
-  themeSaved.value = true
-  clearTimeout(themeTimer)
-  themeTimer = setTimeout(() => { themeSaved.value = false }, 3000)
-}
-
-// Apply on load
-applyTheme(selectedTheme.value)
-</script>
 
 <style scoped>
 /* ─── Layout ─────────────────────────────────────────────────────────────── */
@@ -283,7 +416,7 @@ applyTheme(selectedTheme.value)
   display: flex;
   min-height: calc(100vh - 64px);
   background: var(--primary-background-color);
-  font-family: 'Aspekta', sans-serif;
+  font-family: "Aspekta", sans-serif;
   color: var(--primary-text-color);
 }
 
@@ -312,14 +445,14 @@ applyTheme(selectedTheme.value)
 .settings-nav {
   background: #fff;
   border: 1px solid var(--border-bottom);
-    overflow: hidden;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 [data-theme="dark"] .settings-nav {
   background: #1a1a1a;
-  border-color: rgba(255,255,255,0.12);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .settings-nav__item {
@@ -329,7 +462,7 @@ applyTheme(selectedTheme.value)
   border: none;
   border-bottom: 1px solid var(--border-bottom);
   padding: 13px 16px;
-  font-family: 'Aspekta', sans-serif;
+  font-family: "Aspekta", sans-serif;
   font-size: 13px;
   font-weight: 400;
   color: var(--primary-text-color);
@@ -383,7 +516,7 @@ applyTheme(selectedTheme.value)
 [data-theme="dark"] .card-block,
 [data-theme="dark"] .save-row {
   background: #1a1a1a;
-  border-color: rgba(255,255,255,0.12);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* ─── Section header block ───────────────────────────────────────────────── */
@@ -427,7 +560,9 @@ applyTheme(selectedTheme.value)
 }
 
 /* remove the old explicit divider — borders between blocks handle it */
-.card-divider { display: none; }
+.card-divider {
+  display: none;
+}
 
 /* ─── Field grid ─────────────────────────────────────────────────────────── */
 .field-grid {
@@ -459,7 +594,7 @@ applyTheme(selectedTheme.value)
   border: none;
   padding: 8px 10px;
   font-size: 13px;
-  font-family: 'Aspekta', sans-serif;
+  font-family: "Aspekta", sans-serif;
   color: var(--primary-text-color);
   background: var(--seoncdary-background-color);
   outline: none;
@@ -492,14 +627,20 @@ applyTheme(selectedTheme.value)
   border: none;
   font-size: 13px;
   font-weight: 600;
-  font-family: 'Aspekta', sans-serif;
+  font-family: "Aspekta", sans-serif;
   cursor: pointer;
-  transition: background 0.14s, transform 0.1s;
+  transition:
+    background 0.14s,
+    transform 0.1s;
   letter-spacing: -0.1px;
 }
 
-.btn-save:hover  { background: #0520a0; }
-.btn-save:active { transform: scale(0.97); }
+.btn-save:hover {
+  background: #0520a0;
+}
+.btn-save:active {
+  transform: scale(0.97);
+}
 
 .btn-saved {
   display: flex;
@@ -508,16 +649,24 @@ applyTheme(selectedTheme.value)
   color: var(--settings-saved);
   font-size: 13px;
   font-weight: 600;
-  font-family: 'Aspekta', sans-serif;
+  font-family: "Aspekta", sans-serif;
 }
 
 /* ─── Fade-check transition ──────────────────────────────────────────────── */
 .fade-check-enter-active,
 .fade-check-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
-.fade-check-enter-from { opacity: 0; transform: translateY(4px); }
-.fade-check-leave-to   { opacity: 0; transform: translateY(-4px); }
+.fade-check-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+.fade-check-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
 
 /* ─── Theme selector ─────────────────────────────────────────────────────── */
 .theme-options {
@@ -533,10 +682,12 @@ applyTheme(selectedTheme.value)
   cursor: pointer;
   overflow: hidden;
   width: 160px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
   display: flex;
   flex-direction: column;
-  font-family: 'Aspekta', sans-serif;
+  font-family: "Aspekta", sans-serif;
 }
 
 .theme-card:hover {
@@ -557,40 +708,96 @@ applyTheme(selectedTheme.value)
 }
 
 /* Light preview */
-.theme-card__preview--light .preview-nav   { background: #000814; height: 16px; flex-shrink: 0; }
-.theme-card__preview--light .preview-body  { display: flex; flex: 1; background: #f5f5f5; }
-.theme-card__preview--light .preview-sidebar { width: 36px; background: #e2e2e2; flex-shrink: 0; }
-.theme-card__preview--light .preview-main  { flex: 1; padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; }
-.theme-card__preview--light .preview-block { background: #fff; height: 14px; border-radius: 2px; }
-.theme-card__preview--light .preview-block--short { width: 60%; }
+.theme-card__preview--light .preview-nav {
+  background: #000814;
+  height: 16px;
+  flex-shrink: 0;
+}
+.theme-card__preview--light .preview-body {
+  display: flex;
+  flex: 1;
+  background: #f5f5f5;
+}
+.theme-card__preview--light .preview-sidebar {
+  width: 36px;
+  background: #e2e2e2;
+  flex-shrink: 0;
+}
+.theme-card__preview--light .preview-main {
+  flex: 1;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.theme-card__preview--light .preview-block {
+  background: #fff;
+  height: 14px;
+  border-radius: 2px;
+}
+.theme-card__preview--light .preview-block--short {
+  width: 60%;
+}
 
 /* Dark preview */
-.theme-card__preview--dark .preview-nav   { background: #000; height: 16px; flex-shrink: 0; }
-.theme-card__preview--dark .preview-body  { display: flex; flex: 1; background: #111; }
-.theme-card__preview--dark .preview-sidebar { width: 36px; background: #1e1e1e; flex-shrink: 0; }
-.theme-card__preview--dark .preview-main  { flex: 1; padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; }
-.theme-card__preview--dark .preview-block { background: #2a2a2a; height: 14px; border-radius: 2px; }
-.theme-card__preview--dark .preview-block--short { width: 60%; }
+.theme-card__preview--dark .preview-nav {
+  background: #000;
+  height: 16px;
+  flex-shrink: 0;
+}
+.theme-card__preview--dark .preview-body {
+  display: flex;
+  flex: 1;
+  background: #111;
+}
+.theme-card__preview--dark .preview-sidebar {
+  width: 36px;
+  background: #1e1e1e;
+  flex-shrink: 0;
+}
+.theme-card__preview--dark .preview-main {
+  flex: 1;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.theme-card__preview--dark .preview-block {
+  background: #2a2a2a;
+  height: 14px;
+  border-radius: 2px;
+}
+.theme-card__preview--dark .preview-block--short {
+  width: 60%;
+}
 
 /* System preview — split half/half */
 .theme-card__preview--system {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
-.theme-card__preview--system .preview-nav    { display: none; }
-.theme-card__preview--system .preview-body   { display: contents; }
-.theme-card__preview--system .preview-sidebar { display: none; }
-.theme-card__preview--system .preview-main   { display: none; }
+.theme-card__preview--system .preview-nav {
+  display: none;
+}
+.theme-card__preview--system .preview-body {
+  display: contents;
+}
+.theme-card__preview--system .preview-sidebar {
+  display: none;
+}
+.theme-card__preview--system .preview-main {
+  display: none;
+}
 
 /* custom split via ::before / ::after on the preview element itself */
 .theme-card__preview--system::before {
-  content: '';
+  content: "";
   display: block;
   background: #f5f5f5;
   height: 100%;
 }
 .theme-card__preview--system::after {
-  content: '';
+  content: "";
   display: block;
   background: #111;
   height: 100%;
@@ -608,7 +815,7 @@ applyTheme(selectedTheme.value)
 
 [data-theme="dark"] .theme-card__footer {
   background: #1a1a1a;
-  border-top-color: rgba(255,255,255,0.1);
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 .theme-card__label {
@@ -625,7 +832,10 @@ applyTheme(selectedTheme.value)
   align-items: center;
   justify-content: center;
   color: transparent;
-  transition: background 0.14s, border-color 0.14s, color 0.14s;
+  transition:
+    background 0.14s,
+    border-color 0.14s,
+    color 0.14s;
   flex-shrink: 0;
 }
 
@@ -696,7 +906,79 @@ applyTheme(selectedTheme.value)
     grid-column: 1;
   }
 
-  .theme-options { gap: 12px; }
-  .theme-card { width: 130px; }
+  .theme-options {
+    gap: 12px;
+  }
+  .theme-card {
+    width: 130px;
+  }
+}
+/*Bankverbindung*/
+.bank-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-bottom);
+}
+.bank-row:last-of-type {
+  border-bottom: none;
+}
+.bank-row__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-text-color);
+}
+.bank-row__iban {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-left: 10px;
+}
+.bank-row__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.bank-row__btn {
+  background: none;
+  border: 1px solid var(--border-bottom);
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: "Aspekta", sans-serif;
+  color: var(--primary-text-color);
+}
+.bank-row__btn--danger {
+  color: #e53e3e;
+  border-color: #e53e3e;
+}
+.bank-row__default-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-accent-color);
+}
+.bank-empty {
+  font-size: 13px;
+  opacity: 0.5;
+  margin: 8px 0;
+}
+.bank-form {
+  margin-top: 16px;
+}
+.bank-form__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.bank-add-btn {
+  margin-top: 14px;
+  background: none;
+  border: 1px dashed var(--border-bottom);
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: "Aspekta", sans-serif;
+  color: var(--primary-accent-color);
+  width: 100%;
 }
 </style>
