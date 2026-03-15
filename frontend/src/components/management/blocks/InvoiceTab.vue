@@ -170,26 +170,6 @@
                   </svg>
                   Bearbeiten
                 </button>
-                <button class="act" @click="emit('duplicate', inv)">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <rect
-                      x="4.5"
-                      y="4.5"
-                      width="9"
-                      height="9"
-                      rx="1.5"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                    />
-                    <path
-                      d="M2 11V2h9"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                  Kopieren
-                </button>
                 <button class="act" @click="emit('print', inv)">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                     <rect
@@ -221,7 +201,7 @@
                 <!-- Löschen nur bei DRAFT (GoBD) -->
                 <button
                   v-if="inv.status === 'DRAFT'"
-                  class="act act-del"
+                  class="act act-del min-w-25"
                   @click="emit('delete', inv)"
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -243,7 +223,7 @@
                 <!-- Stornieren bei SENT / PAID (GoBD) -->
                 <button
                   v-if="inv.status === 'SENT' || inv.status === 'PAID'"
-                  class="act act-del"
+                  class="act act-del min-w-25"
                   @click="emit('storno', inv)"
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -309,7 +289,6 @@ const props = defineProps<{ invoices: Invoice[]; loading: boolean }>();
 const emit = defineEmits<{
   (e: "detail", inv: Invoice): void;
   (e: "edit", inv: Invoice): void;
-  (e: "duplicate", inv: Invoice): void;
   (e: "print", inv: Invoice): void;
   (e: "delete", inv: Invoice): void;
   (e: "storno", inv: Invoice): void;
@@ -355,14 +334,14 @@ function statusClass(s?: string) {
 .act {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 7px 12px;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   color: #6b7280;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   font-family: inherit;
   transition: all 0.13s;

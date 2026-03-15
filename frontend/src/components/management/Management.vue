@@ -38,7 +38,6 @@
       :loading="invLoading"
       @detail="detailInv = $event"
       @edit="openEditInv($event)"
-      @duplicate="duplicateInv($event)"
       @print="printInv($event)"
       @delete="
         askDelete('Rechnung', $event.invoiceNumber, () => deleteInv($event.id))
@@ -204,38 +203,6 @@ function onInvSaved(updated: Invoice) {
   const idx = invoices.value.findIndex((i) => i.id === updated.id);
   if (idx >= 0) invoices.value.splice(idx, 1, updated);
   toast_("Rechnung gespeichert", "ok");
-}
-async function duplicateInv(inv: Invoice) {
-  const payload = {
-    customerId: inv.customer.id,
-    issueDate: new Date().toISOString().slice(0, 10),
-    serviceDate: inv.serviceDate,
-    currency: inv.currency || "EUR",
-    notes: inv.notes,
-    status: "DRAFT",
-    items: (inv.items || []).map((it) => ({
-      position: it.position,
-      itemId: it.itemId || null,
-      title: it.title,
-      quantity: it.quantity,
-      unit: it.unit,
-      unitPriceNet: it.unitPriceNet,
-      taxRate: it.taxRate,
-    })),
-  };
-  try {
-    const res = await fetch(`${API}/invoices`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const created: Invoice = await res.json();
-    invoices.value.unshift(created);
-    toast_(`${created.invoiceNumber} dupliziert`, "ok");
-  } catch (e: any) {
-    toast_(`Fehler: ${e.message}`, "err");
-  }
 }
 async function deleteInv(id: string) {
   deleting.value = true;
