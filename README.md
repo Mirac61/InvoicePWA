@@ -1,56 +1,65 @@
-
 # Invoice App
 
-Web App für Rechnungen, Kunden und Positionen. Frontend mit Vue 3 und Vite. Backend mit Spring Boot.
+Web App für Rechnungen, Kunden und Positionen.
+Frontend mit **Vue 3 + Vite + Tailwind CSS**. Backend mit **Spring Boot**.
 
-## Projektstruktur
-
-1. backend/invoice-backend, Spring Boot API, Port 8080
-2. frontend, Vue 3 App, Port 5173
+-----
 
 ## Voraussetzungen
 
-1. Git
-2. Java 21
-3. Node.js 20 oder neuer
-4. npm 10 oder neuer
+|Tool   |Version|
+|-------|-------|
+|Java   |21     |
+|Node.js|20+    |
+|npm    |10+    |
 
-Optional für das Start Script unter Windows
 
-1. Git Bash
+> **Windows?** Du brauchst zusätzlich [Git Bash](https://gitforwindows.org/), um das Startscript auszuführen.
+
+-----
 
 ## Schnellstart
 
-### 1) Projekt klonen
+### 1. Projekt klonen
 
 ```bash
 git clone https://github.com/Mirac61/InvoicePWA.git
 cd invoice-app
 ```
 
-### 2) Start mit einem Befehl
+### 2. Alles mit einem Befehl starten
 
-macOS oder Linux
+**macOS / Linux**
 
 ```bash
 chmod +x dev.sh
 ./dev.sh
 ```
 
-Windows mit Git Bash
+**Windows (Git Bash)**
 
 ```bash
 bash dev.sh
 ```
 
-Danach öffnen
+Das Script startet Backend und Frontend automatisch.
 
-1. Frontend: http://localhost:5173
-2. Backend Health: http://localhost:8080/api/health
+### 3. App öffnen
 
-## Manuell starten
+|Dienst        |URL                             |
+|--------------|--------------------------------|
+|Frontend      |http://localhost:5173           |
+|Backend Health|http://localhost:8080/api/health|
 
-### 1) Backend starten
+Wenn beide URLs antworten, läuft alles. ✅
+
+-----
+
+## Manuell starten (ohne Script)
+
+Falls das Script nicht funktioniert, kannst du beide Dienste einzeln starten.
+
+**Terminal 1 – Backend**
 
 ```bash
 cd backend/invoice-backend
@@ -58,13 +67,7 @@ cd backend/invoice-backend
 ./mvnw spring-boot:run
 ```
 
-Backend prüfen
-
-1. http://localhost:8080/api/health
-
-### 2) Frontend starten
-
-Neues Terminal öffnen
+**Terminal 2 – Frontend**
 
 ```bash
 cd frontend
@@ -72,92 +75,126 @@ npm install
 npm run dev
 ```
 
-Frontend öffnen
+-----
 
-1. http://localhost:5173
+## Tailwind CSS einrichten
 
-## Verbindung Frontend zu Backend
+Tailwind ist bereits als Abhängigkeit in der `package.json` eingetragen. Ein `npm install` reicht — du musst nichts extra installieren.
 
-Das Frontend ruft Endpunkte unter /api auf. Vite leitet /api an das Backend weiter.
+Damit Tailwind funktioniert, müssen **drei Dinge** stimmen:
 
-Vite Proxy Einstellung findest du in
+### 1. Plugin in `vite.config.ts` eingetragen
 
-1. frontend/vite.config.ts oder frontend/vite.config.js
+```ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 
-## Typische Probleme
+export default defineConfig({
+  plugins: [
+    vue(),
+    tailwindcss(), // ← das hier
+  ],
+})
+```
 
-### Port ist belegt
+### 2. Tailwind in der globalen CSS-Datei importiert
 
-Wenn das Frontend nicht auf 5173 startet, zeigt Vite den neuen Port in der Konsole.
+```css
+/* src/style.css */
+@import "tailwindcss";
+```
 
-Du kannst auch fix starten
+### 3. CSS-Datei in `main.ts` importiert
+
+```ts
+import './style.css'
+```
+
+Wenn alle drei Punkte stimmen, kannst du Tailwind-Klassen direkt in Vue-Templates verwenden:
+
+```vue
+<button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+  Speichern
+</button>
+```
+
+-----
+
+## Projektstruktur
+
+```
+invoice-app/
+├── backend/
+│   └── invoice-backend/   ← Spring Boot API (Port 8080)
+└── frontend/              ← Vue 3 App (Port 5173)
+    ├── src/
+    │   └── style.css      ← Tailwind Import hier
+    └── vite.config.ts     ← Tailwind Plugin hier
+```
+
+-----
+
+## Häufige Probleme
+
+### Tailwind-Klassen werden nicht angezeigt
+
+Checke die drei Punkte aus dem Tailwind-Abschnitt oben. Danach Dev-Server neu starten:
 
 ```bash
-cd frontend
+# Ctrl+C, dann:
+npm run dev
+```
+
+### Port 5173 ist belegt
+
+Vite zeigt in der Konsole automatisch einen freien Port. Oder fix auf 5173 erzwingen:
+
+```bash
 npm run dev -- --port 5173
 ```
 
 ### Backend startet nicht
-
-Prüfe zuerst den Build
 
 ```bash
 cd backend/invoice-backend
 ./mvnw clean package
 ```
 
-Wenn das fehlschlägt, lies den ersten ERROR Block in der Konsole.
+Den ersten `ERROR`-Block in der Konsole lesen — dort steht die eigentliche Ursache.
 
-### Java Version passt nicht
-
-Prüfen
+### Java oder Node Version stimmt nicht
 
 ```bash
-java -version
+java -version   # braucht Java 21
+node -v         # braucht Node 20+
+npm -v          # braucht npm 10+
 ```
 
-Du brauchst Java 21.
+### Frontend zeigt API-Fehler, Backend läuft aber
 
-### Node Version passt nicht
+1. http://localhost:8080/api/health aufrufen — kommt eine Antwort?
+1. Proxy-Einstellung in `frontend/vite.config.ts` prüfen
+1. In der Browser-Konsole schauen, ob die Requests auf `/api` gehen
 
-Prüfen
-
-```bash
-node -v
-npm -v
-```
-
-Du brauchst Node 20 oder neuer.
-
-### Frontend hat API Fehler, Backend läuft
-
-1. Öffne http://localhost:8080/api/health
-2. Prüfe die Proxy Einstellung in vite.config
-3. Prüfe in der Browser Konsole, ob Calls auf /api gehen
+-----
 
 ## Nützliche Befehle
 
-Backend Tests
-
 ```bash
-cd backend/invoice-backend
-./mvnw test
+# Backend Tests
+cd backend/invoice-backend && ./mvnw test
+
+# Frontend für Produktion bauen
+cd frontend && npm run build
+
+# Produktions-Build lokal testen
+cd frontend && npm run preview
 ```
 
-Frontend Build
-
-```bash
-cd frontend
-npm run build
-```
-
-Frontend Preview
-
-```bash
-cd frontend
-npm run preview
-```
+-----
 
 ## Lizenz
 
-Private Nutzung für dieses Projekt.
+Private Nutzung.
+
