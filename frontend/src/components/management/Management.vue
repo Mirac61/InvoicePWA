@@ -20,7 +20,7 @@
         <span class="flex" v-html="tab.icon"></span>
         {{ tab.label }}
         <span
-          class="text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+          class="text-xs font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center"
           :class="
             activeTab === tab.id
               ? 'bg-white/20 text-white'
@@ -116,7 +116,7 @@
       >
         <div
           v-if="toast"
-          class="fixed bottom-7 right-7 px-5 py-3 rounded-xl text-sm font-semibold text-white shadow-lg z-[9999]"
+          class="fixed bottom-7 right-7 px-5 py-3 rounded-xl text-sm font-semibold text-white shadow-lg z-9999"
           :class="toast.type === 'ok' ? 'bg-green-600' : 'bg-red-600'"
         >
           {{ toast.message }}

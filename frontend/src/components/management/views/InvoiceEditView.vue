@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="open"
-      class="fixed inset-0 bg-black/35 z-[1000] flex items-center justify-center p-4"
+      class="fixed inset-0 bg-black/35 z-1000 flex items-center justify-center p-4"
       @click.self="emit('close')"
     >
       <div
@@ -59,7 +59,7 @@
               class="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0"
             >
               <span
-                class="text-xs text-gray-300 min-w-[18px] text-center pt-6 shrink-0"
+                class="text-xs text-gray-300 min-w-4.5 text-center pt-6 shrink-0"
                 >{{ i + 1 }}</span
               >
               <div class="flex-1 flex flex-col gap-2">

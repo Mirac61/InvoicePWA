@@ -3,7 +3,7 @@
     <!-- Toolbar -->
     <div class="flex items-center gap-3 flex-wrap">
       <div
-        class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3.5 py-2.5 flex-1 min-w-[180px] max-w-sm"
+        class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3.5 py-2.5 flex-1 min-w-45 max-w-sm"
       >
         <svg
           width="15"
@@ -108,7 +108,7 @@
             <td class="px-4 py-3.5">
               <div class="flex items-center gap-2.5">
                 <div
-                  class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center text-xs font-bold text-blue-600 shrink-0"
+                  class="w-9 h-9 rounded-full bg-linear-to-br from-blue-50 to-blue-200 flex items-center justify-center text-xs font-bold text-blue-600 shrink-0"
                 >
                   {{ initials(inv.customer?.forename, inv.customer?.surname) }}
                 </div>

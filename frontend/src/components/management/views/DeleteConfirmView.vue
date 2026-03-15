@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="confirm"
-      class="fixed inset-0 bg-black/35 z-[1000] flex items-center justify-center p-4"
+      class="fixed inset-0 bg-black/35 z-1000 flex items-center justify-center p-4"
       @click.self="emit('cancel')"
     >
       <div

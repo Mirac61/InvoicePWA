@@ -2,7 +2,7 @@
   <section class="flex flex-col gap-4">
     <div class="flex items-center gap-3 flex-wrap">
       <div
-        class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3.5 py-2.5 flex-1 min-w-[180px] max-w-sm"
+        class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3.5 py-2.5 flex-1 min-w-45 max-w-sm"
       >
         <svg
           width="15"
