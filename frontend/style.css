@@ -1,16 +1,14 @@
-:root{
-    --primary-text-color: #090909;
-    
-    --primary-accent-color: #072AC8;
-    --secondary-accent-color: #000814;
+@import "tailwindcss";
 
-    --primary-background-color: #F5F5F5;
-    --secondary-background-color: #E2E2E2;
+:root {
+  --primary-text-color: #090909;
 
+  --primary-accent-color: #072ac8;
+  --secondary-accent-color: #000814;
 
-
+  --primary-background-color: #f5f5f5;
+  --secondary-background-color: #e2e2e2;
 }
-
 
 @media print {
   body * {

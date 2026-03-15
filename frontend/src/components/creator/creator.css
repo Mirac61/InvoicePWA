@@ -181,6 +181,9 @@
   cursor: pointer;
   user-select: none;
 }
+.section-card__header * {
+  pointer-events: auto;
+}
 
 .section-card__left {
   display: flex;
