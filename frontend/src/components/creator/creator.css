@@ -106,16 +106,16 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   EDITOR PANEL  (left 50%)
+   EDITOR PANEL
 ══════════════════════════════════════════════════════ */
 .editor-panel {
-  width: 50%;
+  width: 30%;
   min-width: 300px;
   background: #fff;
   border-right: 1px solid #e8e8e4;
   display: flex;
   flex-direction: column;
-  /* no overflow:hidden — grows with content */
+  height: 100vh;
 }
 
 .editor-header {
