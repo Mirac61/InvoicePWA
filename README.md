@@ -14,7 +14,7 @@ Frontend mit **Vue 3 + Vite + Tailwind CSS**. Backend mit **Spring Boot**.
 |npm    |10+    |
 
 
-> **Windows?** Du brauchst zusätzlich [Git Bash](https://gitforwindows.org/), um das Startscript auszuführen.
+> **Windows?** Man braucht zusätzlich [Git Bash](https://gitforwindows.org/), um das Startscript auszuführen.
 
 -----
 
@@ -51,7 +51,7 @@ Das Script startet Backend und Frontend automatisch.
 |Frontend      |http://localhost:5173           |
 |Backend Health|http://localhost:8080/api/health|
 
-Wenn beide URLs antworten, läuft alles. ✅
+Wenn beide URLs antworten, läuft alles.
 
 -----
 
@@ -111,7 +111,7 @@ export default defineConfig({
 import './style.css'
 ```
 
-Wenn alle drei Punkte stimmen, kannst du Tailwind-Klassen direkt in Vue-Templates verwenden:
+Wenn alle drei Punkte stimmen, können Tailwind-Klassen direkt in Vue-Templates verwendet werden:
 
 ```vue
 <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
