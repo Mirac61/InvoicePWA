@@ -77,16 +77,24 @@ async function saveInvoice() {
   const unitIdx = labels.findIndex(
     (l) => l.includes("einh") || l.includes("unit"),
   );
-  const priceIdx = labels.findLastIndex(
-    (l) =>
-      l.includes("sum") ||
-      l.includes("preis") ||
-      l.includes("price") ||
-      l.includes("betrag"),
-  );
+  const priceIdx = labels
+    .map((l, i) => ({
+      l,
+      i,
+    }))
+    .reverse()
+    .findIndex(
+      ({ l }) =>
+        l.includes("sum") ||
+        l.includes("preis") ||
+        l.includes("price") ||
+        l.includes("betrag"),
+    );
+  const priceIdxFinal =
+    priceIdx >= 0 ? labels.length - 1 - priceIdx : priceIdx;
 
   const effectiveTitleIdx = titleIdx >= 0 ? titleIdx : 0;
-  const effectivePriceIdx = priceIdx >= 0 ? priceIdx : cols.length - 1;
+  const effectivePriceIdx = priceIdxFinal >= 0 ? priceIdxFinal : cols.length - 1;
   const effectiveQtyIdx =
     qtyIdx >= 0 ? qtyIdx : cols.length >= 2 ? cols.length - 2 : 0;
 
