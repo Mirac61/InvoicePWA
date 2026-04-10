@@ -185,8 +185,8 @@
         @click="emit('save')"
         :disabled="isSaving"
       >
-        <span v-if="isSaving">⏳ Speichern…</span>
-        <span v-else>💾 In DB speichern</span>
+        <span v-if="isSaving"> Speichern…</span>
+        <span v-else> Speichern</span>
       </button>
       <button class="btn-download" type="button" @click="downloadPDF()">
         <Download :size="16" />

@@ -179,6 +179,7 @@
   justify-content: space-between;
   padding: 11px 13px;
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
 }
 .section-card__header * {
@@ -669,7 +670,7 @@ textarea {
   bottom: 0;
   padding: 14px 24px;
   display: flex;
-  justify-content: stretch;
+  flex-direction: column;
   gap: 10px;
   background: linear-gradient(to top, #f4f4f2 70%, transparent);
   pointer-events: none;
@@ -692,7 +693,6 @@ textarea {
   font-family: inherit;
   cursor: pointer;
   pointer-events: all;
-  box-shadow: 0 2px 14px rgba(26, 86, 219, 0.32);
   transition:
     background 0.14s,
     transform 0.1s,
