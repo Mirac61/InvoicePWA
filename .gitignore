@@ -35,3 +35,4 @@ yarn-error.log*
 
 # Local planning files
 CUSTOMER_TODO.local.md
+node_modules
