@@ -1,4 +1,6 @@
 import { nextTick } from "vue";
+import html2pdf from "html2pdf.js";
+import { invoiceData } from "./invoiceData"; // Adjust the path as necessary
 
 export async function downloadPDF() {
   await nextTick();
@@ -6,49 +8,19 @@ export async function downloadPDF() {
   const el = document.getElementById("invoice-preview");
   if (!el) return;
 
-  const styles = Array.from(document.styleSheets)
-    .map((sheet) => {
-      try {
-        return Array.from(sheet.cssRules)
-          .map((r) => r.cssText)
-          .join("\n");
-      } catch {
-        return "";
-      }
-    })
-    .join("\n");
+  const invoiceNumber = invoiceData.invoiceNumber || "Neu";
 
-  const win = window.open("", "_blank", "width=900,height=1200");
-  if (!win) return;
-
-  win.document.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <title></title>
-        <style>
-          ${styles}
-          body { margin: 0; background: white; }
-          @page { margin: 15mm; size: A4; }
-        </style>
-      </head>
-      <body>${el.outerHTML}</body>
-    </html>
-  `);
-
-  win.document.close();
-  win.focus();
-
-  win.onload = () => {
-    win.print();
-    win.close();
+ const opt = {
+    margin:       [15, 15, 15, 15], 
+    filename:     `Rechnung_${invoiceNumber}.pdf`,
+    image:        { type: 'jpeg' as const, quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true }, 
+    jsPDF:        { 
+      unit: 'mm' as const, 
+      format: 'a4' as const, 
+      orientation: 'portrait' as const 
+    }
   };
 
-  setTimeout(() => {
-    if (!win.closed) {
-      win.print();
-      win.close();
-    }
-  }, 500);
+  html2pdf().set(opt).from(el).save();
 }
