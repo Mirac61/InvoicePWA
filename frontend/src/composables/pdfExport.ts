@@ -1,6 +1,6 @@
 import { nextTick } from "vue";
 import html2pdf from "html2pdf.js";
-import { invoiceData } from "./invoiceData"; // Adjust the path as necessary
+import { invoiceData } from "./invoiceData";
 
 export async function downloadPDF() {
   await nextTick();
@@ -10,16 +10,16 @@ export async function downloadPDF() {
 
   const invoiceNumber = invoiceData.invoiceNumber || "Neu";
 
- const opt = {
-    margin:       [15, 15, 15, 15], 
-    filename:     `Rechnung_${invoiceNumber}.pdf`,
-    image:        { type: 'jpeg' as const, quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true }, 
-    jsPDF:        { 
-      unit: 'mm' as const, 
-      format: 'a4' as const, 
-      orientation: 'portrait' as const 
-    }
+  const opt = {
+    margin:      [15, 15, 15, 15] as [number, number, number, number],
+    filename:    `Rechnung_${invoiceNumber}.pdf`,
+    image:       { type: "jpeg" as const, quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF:       {
+      unit:        "mm" as const,
+      format:      "a4" as const,
+      orientation: "portrait" as const,
+    },
   };
 
   html2pdf().set(opt).from(el).save();
