@@ -4,23 +4,29 @@ import Creator from "./creator/CreatorLayout.vue";
 import Settings from "./Settings.vue";
 import Home from "./Home.vue";
 import Management from "./management/Management.vue";
+import WebPage from "../WebPage.vue";
 
 const Components = {
   Home,
   Creator,
   Management,
   Settings,
+
 };
+
+
 
 const activeComponent = ref<keyof typeof Components>("Home");
 const currentComponent = computed(() => {
   return Components[activeComponent.value];
 });
+
+const emit = defineEmits<{ (e: 'back-to-homePage'): void }>()
 </script>
 
 <template>
   <nav class="navbar">
-    <img src="/public/Invar.svg" alt="Invar Logo" />
+    <img src="/public/Invar.svg" @click.prevent="emit('back-to-homePage')" alt="Invar Logo" />
     <ul class="navbar__links">
       <li><a @click.prevent="activeComponent = 'Home'">Home</a></li>
       <li><a @click.prevent="activeComponent = 'Creator'">Creator</a></li>
